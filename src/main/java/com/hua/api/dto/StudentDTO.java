@@ -1,9 +1,6 @@
 package com.hua.api.dto;
 
-import com.hua.api.enums.GenderEnum;
 import lombok.Data;
-
-import java.util.Date;
 
 @Data
 public class StudentDTO {
@@ -18,9 +15,9 @@ public class StudentDTO {
 
     private String motherName;
 
-    private Date birthDate;
+    private String birthDate;
 
-    private GenderEnum gender;
+    private StudentGenderDTO gender;
 
     private StudentDetailsDTO studentDetails; //Στοιχεία φοίτησης
 

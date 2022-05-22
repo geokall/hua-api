@@ -9,5 +9,5 @@ public class StudentDetailsDTO {
 
     private String department;
 
-    private String direction;
+    private StudentDirectionDTO direction;
 }

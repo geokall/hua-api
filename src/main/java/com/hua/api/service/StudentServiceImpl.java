@@ -1,17 +1,18 @@
 package com.hua.api.service;
 
-import com.hua.api.dto.StudentContactInfoDTO;
-import com.hua.api.dto.StudentDTO;
-import com.hua.api.dto.StudentDetailsDTO;
+import com.hua.api.dto.*;
 import com.hua.api.entity.HuaContactInfo;
 import com.hua.api.entity.HuaStudentDetails;
 import com.hua.api.entity.HuaUser;
 import com.hua.api.repository.ContactInfoRepository;
 import com.hua.api.repository.UserRepository;
+import com.hua.api.utilities.HuaUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -35,13 +36,13 @@ public class StudentServiceImpl implements StudentService {
 
         var studentDetailsDTO = studentDTO.getStudentDetails();
 
-        List<HuaStudentDetails> listOfStudentDetails = getStudentDetails(studentDetailsDTO);
+        var listOfStudentDetails = getStudentDetails(studentDetailsDTO);
 
         user.setStudentDetails(listOfStudentDetails);
 
         var studentContactInfoDTO = studentDTO.getStudentContactInfo();
 
-        List<HuaContactInfo> listOfContactInfo = getContactInfos(studentContactInfoDTO);
+        var listOfContactInfo = getContactInfos(studentContactInfoDTO);
 
         user.setContactInfos(listOfContactInfo);
 
@@ -70,7 +71,12 @@ public class StudentServiceImpl implements StudentService {
         List<HuaStudentDetails> listOfStudentDetails = new ArrayList<>();
         HuaStudentDetails studentDetails = new HuaStudentDetails();
         studentDetails.setDepartment(studentDetailsDTO.getDepartment());
-        studentDetails.setDirection(studentDetailsDTO.getDirection());
+
+        var directionDTO = studentDetailsDTO.getDirection();
+
+        if (directionDTO != null) {
+            studentDetails.setDirection(directionDTO.getName());
+        }
 
         listOfStudentDetails.add(studentDetails);
 
@@ -82,7 +88,18 @@ public class StudentServiceImpl implements StudentService {
         user.setName(studentDTO.getName());
         user.setFatherName(studentDTO.getFatherName());
         user.setMotherName(studentDTO.getMotherName());
-        user.setBirthDate(studentDTO.getBirthDate());
-        user.setGender(studentDTO.getGender());
+
+        String birthDate = studentDTO.getBirthDate();
+
+        if (!ObjectUtils.isEmpty(birthDate)) {
+            Date birthDateFormatted = HuaUtil.formatDate(birthDate);
+            user.setBirthDate(birthDateFormatted);
+        }
+
+        var genderDTO = studentDTO.getGender();
+
+        if (genderDTO != null) {
+            user.setGender(genderDTO.getName());
+        }
     }
 }
