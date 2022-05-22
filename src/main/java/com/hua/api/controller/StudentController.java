@@ -1,6 +1,7 @@
 package com.hua.api.controller;
 
 import com.hua.api.dto.StudentDTO;
+import com.hua.api.exception.HuaExceptionHandler;
 import com.hua.api.service.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -11,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/student")
-public class StudentController {
+public class StudentController extends HuaExceptionHandler {
 
     private final StudentService studentService;
 

@@ -1,5 +1,6 @@
 package com.hua.api.dto;
 
+import com.hua.api.enums.GenderEnum;
 import lombok.Data;
 
 @Data
@@ -17,7 +18,7 @@ public class StudentDTO {
 
     private String birthDate;
 
-    private StudentGenderDTO gender;
+    private GenderEnum gender;
 
     private StudentDetailsDTO studentDetails; //Στοιχεία φοίτησης
 
