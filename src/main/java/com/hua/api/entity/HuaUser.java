@@ -35,13 +35,13 @@ public class HuaUser implements Serializable {
     @Column(nullable = false)
     private String name;
 
-    @Column(name = "fatherName")
+    @Column(name = "father_name")
     private String fatherName;
 
-    @Column(name = "motherName")
+    @Column(name = "mother_name")
     private String motherName;
 
-    @Column(name = "birthDate")
+    @Column(name = "birth_date")
     @Temporal(TemporalType.DATE)
     private Date birthDate;
 

@@ -16,7 +16,7 @@ public class HuaContactInfo implements Serializable {
 
     private String city;
 
-    @Column(name = "postalCode")
+    @Column(name = "postal_code")
     private String postalCode;
 
     @Column(name = "mobile_number", nullable = false, unique = true, length = 20)
