@@ -1,7 +1,7 @@
 version: '3.7'
 services:
   postgres:
-    image: postgres:10.5
+    image: postgres:14.1-alpine
     restart: always
     environment:
       - POSTGRES_USER=postgres
@@ -13,4 +13,7 @@ services:
     ports:
       - '5438:5432'
     volumes:
-      - ./postgres-data:/var/lib/postgresql/data
+      - db:/var/lib/postgresql/data
+volumes:
+  db:
+    driver: local

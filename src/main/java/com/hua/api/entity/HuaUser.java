@@ -43,7 +43,7 @@ public class HuaUser implements Serializable {
 
     @Column(name = "birthDate")
     @Temporal(TemporalType.DATE)
-    private LocalDateTime birthDate;
+    private Date birthDate;
 
     @Enumerated(EnumType.STRING)
     @Type(type = "pgsql_enum")
@@ -136,11 +136,11 @@ public class HuaUser implements Serializable {
         this.motherName = motherName;
     }
 
-    public LocalDateTime getBirthDate() {
+    public Date getBirthDate() {
         return birthDate;
     }
 
-    public void setBirthDate(LocalDateTime birthDate) {
+    public void setBirthDate(Date birthDate) {
         this.birthDate = birthDate;
     }
 
