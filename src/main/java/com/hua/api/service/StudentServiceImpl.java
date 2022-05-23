@@ -23,12 +23,15 @@ public class StudentServiceImpl implements StudentService {
 
     private final UserRepository userRepository;
     private final ContactInfoRepository contactInfoRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Autowired
     public StudentServiceImpl(UserRepository userRepository,
-                              ContactInfoRepository contactInfoRepository) {
+                              ContactInfoRepository contactInfoRepository,
+                              PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.contactInfoRepository = contactInfoRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -128,7 +131,7 @@ public class StudentServiceImpl implements StudentService {
     private void setBasicInfo(StudentDTO studentDTO, HuaUser user) {
         user.setDateCreated(LocalDateTime.now());
         user.setVerified(false);
-        user.setPassword("test");
+        user.setPassword(passwordEncoder.encode("test"));
         user.setEmail("temp");
         user.setUsername("temp");
 

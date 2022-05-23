@@ -41,7 +41,7 @@ public class HuaUserDetailsImpl implements UserDetailsService {
 
         return HuaUserPrincipal.builder()
                 .id(user.getId())
-//                .password(user.getPassword())
+                .password(user.getPassword())
                 .username(user.getUsername())
                 .surname(user.getSurname())
                 .name(user.getName())

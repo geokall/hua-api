@@ -2,6 +2,8 @@ package com.hua.api.controller;
 
 import com.hua.api.dto.JwtResponseDTO;
 import com.hua.api.dto.LoginCredentialsDTO;
+import com.hua.api.exception.HuaExceptionHandler;
+import com.hua.api.exception.HuaNotFound;
 import com.hua.api.security.HuaUserPrincipal;
 import com.hua.api.security.JwtUtils;
 import org.slf4j.Logger;
@@ -9,7 +11,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,7 +26,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("auth")
-public class AuthController {
+public class AuthController extends HuaExceptionHandler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthController.class);
 
@@ -39,20 +43,26 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<JwtResponseDTO> authenticateUser(@RequestBody LoginCredentialsDTO dto) {
 
-        LOGGER.info("Trying to authenticate");
-        var authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(dto.getUsername(), dto.getPassword()));
+        try {
+            LOGGER.info("Trying to authenticate");
+            var authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(dto.getUsername(), dto.getPassword()));
 
-        HuaUserPrincipal userDetails = (HuaUserPrincipal) authentication.getPrincipal();
+            HuaUserPrincipal userDetails = (HuaUserPrincipal) authentication.getPrincipal();
 
-        String jwt = jwtUtils.generateJwtToken(authentication);
-        LOGGER.info("Generated jwt");
+            String jwt = jwtUtils.generateJwtToken(authentication);
+            LOGGER.info("Generated jwt");
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        JwtResponseDTO jwtResponseDTO = toJwtResponseDTO(jwt, userDetails);
+            JwtResponseDTO jwtResponseDTO = toJwtResponseDTO(jwt, userDetails);
 
-        return ResponseEntity.ok().body(jwtResponseDTO);
+            return ResponseEntity.ok().body(jwtResponseDTO);
+        } catch (BadCredentialsException e) {
+            LOGGER.info(e.getMessage());
+            throw new HuaNotFound("User not found");
+        }
+
     }
 
 
