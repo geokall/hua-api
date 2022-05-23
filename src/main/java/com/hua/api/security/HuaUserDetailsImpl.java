@@ -6,9 +6,9 @@ import com.hua.api.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -23,7 +23,6 @@ public class HuaUserDetailsImpl implements UserDetailsService {
     public HuaUserDetailsImpl(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
-
 
     @Override
     public HuaUserPrincipal loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -42,6 +41,7 @@ public class HuaUserDetailsImpl implements UserDetailsService {
 
         return HuaUserPrincipal.builder()
                 .id(user.getId())
+//                .password(user.getPassword())
                 .username(user.getUsername())
                 .surname(user.getSurname())
                 .name(user.getName())

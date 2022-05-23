@@ -33,8 +33,12 @@ public class HuaUtil {
         return yearMonthDay;
     }
 
-    public static String generateUsername(String surname) {
-        return ITP.concat(surname).concat(RandomStringUtils.randomAlphanumeric(3).toUpperCase());
+//    public static String generateUsername(String surname) {
+//        return ITP.concat(surname).concat(RandomStringUtils.randomAlphanumeric(3).toUpperCase());
+//    }
+
+    public static String generateUsername(Long id) {
+        return ITP.concat(String.valueOf(id));
     }
 
     public static String generateEmail(String generatedUsername) {

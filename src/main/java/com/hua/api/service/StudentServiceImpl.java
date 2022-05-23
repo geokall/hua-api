@@ -9,6 +9,7 @@ import com.hua.api.repository.ContactInfoRepository;
 import com.hua.api.repository.UserRepository;
 import com.hua.api.utilities.HuaUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
@@ -41,8 +42,6 @@ public class StudentServiceImpl implements StudentService {
 
         setBasicInfo(studentDTO, user);
 
-        generateUsernameAndEmail(studentDTO, user);
-
         var studentDetailsDTO = studentDTO.getStudentDetails();
 
         var listOfStudentDetails = getStudentDetails(studentDetailsDTO, user);
@@ -56,6 +55,12 @@ public class StudentServiceImpl implements StudentService {
         user.setContactInfos(listOfContactInfo);
 
         HuaUser savedUser = userRepository.save(user);
+
+        userRepository.findById(savedUser.getId())
+                .ifPresent(huaUser -> {
+                    HuaUser updatedUser = generateUsernameAndEmail(huaUser);
+                    userRepository.save(updatedUser);
+                });
 
         return savedUser.getId();
     }
@@ -77,12 +82,14 @@ public class StudentServiceImpl implements StudentService {
         }
     }
 
-    private void generateUsernameAndEmail(StudentDTO studentDTO, HuaUser user) {
-        String generatedUsername = HuaUtil.generateUsername(studentDTO.getSurname());
+    private HuaUser generateUsernameAndEmail(HuaUser user) {
+        String generatedUsername = HuaUtil.generateUsername(user.getId());
         user.setUsername(generatedUsername);
 
         String generatedEmail = HuaUtil.generateEmail(generatedUsername);
         user.setEmail(generatedEmail);
+
+        return user;
     }
 
     private List<HuaContactInfo> getContactInfos(StudentContactInfoDTO studentContactInfoDTO, HuaUser user) {
@@ -121,6 +128,10 @@ public class StudentServiceImpl implements StudentService {
     private void setBasicInfo(StudentDTO studentDTO, HuaUser user) {
         user.setDateCreated(LocalDateTime.now());
         user.setVerified(false);
+        user.setPassword("test");
+        user.setEmail("temp");
+        user.setUsername("temp");
+
         user.setSurname(studentDTO.getSurname());
         user.setName(studentDTO.getName());
         user.setFatherName(studentDTO.getFatherName());

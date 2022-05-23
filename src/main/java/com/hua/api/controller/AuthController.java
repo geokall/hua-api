@@ -2,7 +2,6 @@ package com.hua.api.controller;
 
 import com.hua.api.dto.JwtResponseDTO;
 import com.hua.api.dto.LoginCredentialsDTO;
-import com.hua.api.security.HuaUserDetailsImpl;
 import com.hua.api.security.HuaUserPrincipal;
 import com.hua.api.security.JwtUtils;
 import org.slf4j.Logger;
@@ -11,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,39 +28,37 @@ public class AuthController {
 
     private final AuthenticationManager authenticationManager;
     private final JwtUtils jwtUtils;
-    private final HuaUserDetailsImpl huaUserDetails;
 
     @Autowired
     public AuthController(AuthenticationManager authenticationManager,
-                          JwtUtils jwtUtils,
-                          HuaUserDetailsImpl huaUserDetails) {
+                          JwtUtils jwtUtils) {
         this.authenticationManager = authenticationManager;
         this.jwtUtils = jwtUtils;
-        this.huaUserDetails = huaUserDetails;
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> authenticateUser(@RequestBody LoginCredentialsDTO dto) {
+    public ResponseEntity<JwtResponseDTO> authenticateUser(@RequestBody LoginCredentialsDTO dto) {
 
-        var authInputToken = new UsernamePasswordAuthenticationToken(dto.getUsername(), dto.getPassword());
+        LOGGER.info("Trying to authenticate");
+        var authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(dto.getUsername(), dto.getPassword()));
 
-        //redirect to userDetails
-        LOGGER.info("Trying to authenticate username:" + dto.getUsername());
-        Authentication authentication = authenticationManager.authenticate(authInputToken);
+        HuaUserPrincipal userDetails = (HuaUserPrincipal) authentication.getPrincipal();
 
-        HuaUserPrincipal userPrincipal = huaUserDetails.loadUserByUsername(authentication.getName());
+        String jwt = jwtUtils.generateJwtToken(authentication);
+        LOGGER.info("Generated jwt");
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        JwtResponseDTO jwtResponseDTO = toJwtResponseDTO(authentication, userPrincipal);
+        JwtResponseDTO jwtResponseDTO = toJwtResponseDTO(jwt, userDetails);
 
         return ResponseEntity.ok().body(jwtResponseDTO);
     }
 
 
-    private JwtResponseDTO toJwtResponseDTO(Authentication authentication, HuaUserPrincipal userPrincipal) {
+    private JwtResponseDTO toJwtResponseDTO(String jwt, HuaUserPrincipal userPrincipal) {
         JwtResponseDTO jwtResponseDTO = new JwtResponseDTO();
-        jwtResponseDTO.setToken(authentication.getDetails().toString());
+        jwtResponseDTO.setToken(jwt);
         jwtResponseDTO.setUsername(userPrincipal.getUsername());
         jwtResponseDTO.setSurname(userPrincipal.getSurname());
         jwtResponseDTO.setName(userPrincipal.getName());
