@@ -25,6 +25,9 @@ public class HuaUser implements Serializable {
     //generated from system without @hua.gr
     private String username;
 
+    @Column(nullable = false)
+    private String password;
+
     @Column(nullable = false, unique = true)
     //generated from system with @hua.gr
     private String email;
@@ -94,6 +97,14 @@ public class HuaUser implements Serializable {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public String getEmail() {
