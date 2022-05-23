@@ -131,7 +131,7 @@ public class StudentServiceImpl implements StudentService {
     private void setBasicInfo(StudentDTO studentDTO, HuaUser user) {
         user.setDateCreated(LocalDateTime.now());
         user.setVerified(false);
-        user.setPassword(passwordEncoder.encode("test"));
+        user.setPassword(passwordEncoder.encode("temp"));
         user.setEmail("temp");
         user.setUsername("temp");
 
