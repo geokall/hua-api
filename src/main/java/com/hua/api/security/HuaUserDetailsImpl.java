@@ -26,7 +26,7 @@ public class HuaUserDetailsImpl implements UserDetailsService {
 
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    public HuaUserPrincipal loadUserByUsername(String username) throws UsernameNotFoundException {
         HuaUser user = userRepository.findByUsername(username);
 
         if (user == null) {
