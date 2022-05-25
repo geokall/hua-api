@@ -20,7 +20,19 @@ public class StudentDTO {
 
     private GenderEnum gender;
 
-    private StudentDetailsDTO studentDetails; //Στοιχεία φοίτησης
+    //Στοιχεία φοίτησης
+    private String department;
 
-    private StudentContactInfoDTO studentContactInfo; //Στοιχεία επικοινωνίας
+    private StudentDirectionDTO direction;
+
+    //Στοιχεία επικοινωνίας
+    private String address;
+
+    private String city;
+
+    private String postalCode;
+
+    private String mobileNumber;
+
+    private String vatNumber;
 }

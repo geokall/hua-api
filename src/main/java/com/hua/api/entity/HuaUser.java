@@ -32,7 +32,7 @@ public class HuaUser implements Serializable {
     //generated from system with @hua.gr
     private String email;
 
-    @Column(name = "surname", nullable = false)
+    @Column(name = "surname")
     private String surname;
 
     @Column(nullable = false)
@@ -52,6 +52,27 @@ public class HuaUser implements Serializable {
     @Type(type = "pgsql_enum")
     @Column(name = "gender")
     private GenderEnum gender;
+
+    //contact info
+    private String address;
+
+    private String city;
+
+    @Column(name = "postal_code")
+    private String postalCode;
+
+    @Column(name = "mobile_number", nullable = false, unique = true, length = 20)
+    private String mobileNumber;
+
+    @Column(name = "vat_number", nullable = false, unique = true, length = 20)
+    private String vatNumber;
+
+    //student details
+    @Column(name = "department")
+    private String department;
+
+    @Column(name = "direction")
+    private String direction;
 
     @CreatedDate
     @Column(name = "created_date", nullable = false)
@@ -73,12 +94,6 @@ public class HuaUser implements Serializable {
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
     private Set<HuaRole> roles = new HashSet<>();
-
-    @OneToMany(mappedBy = "huaUser", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<HuaContactInfo> contactInfos = new ArrayList<>();
-
-    @OneToMany(mappedBy = "huaUser", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<HuaStudentDetails> studentDetails = new ArrayList<>();
 
     public HuaUser() {
     }
@@ -163,6 +178,62 @@ public class HuaUser implements Serializable {
         this.gender = gender;
     }
 
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+    public String getPostalCode() {
+        return postalCode;
+    }
+
+    public void setPostalCode(String postalCode) {
+        this.postalCode = postalCode;
+    }
+
+    public String getMobileNumber() {
+        return mobileNumber;
+    }
+
+    public void setMobileNumber(String mobileNumber) {
+        this.mobileNumber = mobileNumber;
+    }
+
+    public String getVatNumber() {
+        return vatNumber;
+    }
+
+    public void setVatNumber(String vatNumber) {
+        this.vatNumber = vatNumber;
+    }
+
+    public String getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(String department) {
+        this.department = department;
+    }
+
+    public String getDirection() {
+        return direction;
+    }
+
+    public void setDirection(String direction) {
+        this.direction = direction;
+    }
+
     public LocalDateTime getDateCreated() {
         return dateCreated;
     }
@@ -193,22 +264,6 @@ public class HuaUser implements Serializable {
 
     public void setRoles(Set<HuaRole> roles) {
         this.roles = roles;
-    }
-
-    public List<HuaContactInfo> getContactInfos() {
-        return contactInfos;
-    }
-
-    public void setContactInfos(List<HuaContactInfo> contactInfos) {
-        this.contactInfos = contactInfos;
-    }
-
-    public List<HuaStudentDetails> getStudentDetails() {
-        return studentDetails;
-    }
-
-    public void setStudentDetails(List<HuaStudentDetails> studentDetails) {
-        this.studentDetails = studentDetails;
     }
 
     @Override

@@ -1,11 +1,8 @@
 package com.hua.api.service;
 
 import com.hua.api.dto.*;
-import com.hua.api.entity.HuaContactInfo;
-import com.hua.api.entity.HuaStudentDetails;
 import com.hua.api.entity.HuaUser;
 import com.hua.api.exception.HuaNotFound;
-import com.hua.api.repository.ContactInfoRepository;
 import com.hua.api.repository.UserRepository;
 import com.hua.api.utilities.HuaUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,41 +16,30 @@ import java.util.*;
 @Service
 public class StudentServiceImpl implements StudentService {
 
+    private static final String TEMP = "temp";
+
     private final UserRepository userRepository;
-    private final ContactInfoRepository contactInfoRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Autowired
     public StudentServiceImpl(UserRepository userRepository,
-                              ContactInfoRepository contactInfoRepository,
                               PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
-        this.contactInfoRepository = contactInfoRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
     @Override
     public Long createStudent(StudentDTO studentDTO) {
 
-        StudentContactInfoDTO studentContactInfo = studentDTO.getStudentContactInfo();
-
-        handleMobileAndAfmUniqueness(studentContactInfo);
+        handleMobileAndAfmUniqueness(studentDTO.getMobileNumber(), studentDTO.getVatNumber());
 
         HuaUser user = new HuaUser();
 
         setBasicInfo(studentDTO, user);
 
-        var studentDetailsDTO = studentDTO.getStudentDetails();
+        setStudentDetails(studentDTO, user);
 
-        var listOfStudentDetails = getStudentDetails(studentDetailsDTO, user);
-
-        user.setStudentDetails(listOfStudentDetails);
-
-        var studentContactInfoDTO = studentDTO.getStudentContactInfo();
-
-        var listOfContactInfo = getContactInfos(studentContactInfoDTO, user);
-
-        user.setContactInfos(listOfContactInfo);
+        setContactInfo(studentDTO, user);
 
         HuaUser savedUser = userRepository.save(user);
 
@@ -67,16 +53,16 @@ public class StudentServiceImpl implements StudentService {
     }
 
 
-    private void handleMobileAndAfmUniqueness(StudentContactInfoDTO studentContactInfo) {
-        if (!ObjectUtils.isEmpty(studentContactInfo.getMobileNumber())) {
-            contactInfoRepository.findByMobileNumber(studentContactInfo.getMobileNumber())
+    private void handleMobileAndAfmUniqueness(String mobileNumber, String vatNumber) {
+        if (!ObjectUtils.isEmpty(mobileNumber)) {
+            userRepository.findByMobileNumber(mobileNumber)
                     .ifPresent(student -> {
                         throw new HuaNotFound("Υπάρχει φοιτητής με το ίδιο κινητό");
                     });
         }
 
-        if (!ObjectUtils.isEmpty(studentContactInfo.getVatNumber())) {
-            contactInfoRepository.findByVatNumber(studentContactInfo.getVatNumber())
+        if (!ObjectUtils.isEmpty(vatNumber)) {
+            userRepository.findByVatNumber(vatNumber)
                     .ifPresent(student -> {
                         throw new HuaNotFound("Υπάρχει φοιτητής με τον ίδιο Α.Φ.Μ");
                     });
@@ -93,45 +79,12 @@ public class StudentServiceImpl implements StudentService {
         return user;
     }
 
-    private List<HuaContactInfo> getContactInfos(StudentContactInfoDTO studentContactInfoDTO, HuaUser user) {
-        List<HuaContactInfo> listOfContactInfo = new ArrayList<>();
-
-        HuaContactInfo contactInfo = new HuaContactInfo();
-        contactInfo.setAddress(studentContactInfoDTO.getAddress());
-        contactInfo.setCity(studentContactInfoDTO.getCity());
-        contactInfo.setPostalCode(studentContactInfoDTO.getPostalCode());
-        contactInfo.setMobileNumber(studentContactInfoDTO.getMobileNumber());
-        contactInfo.setVatNumber(studentContactInfoDTO.getVatNumber());
-        contactInfo.setHuaUser(user);
-
-        listOfContactInfo.add(contactInfo);
-
-        return listOfContactInfo;
-    }
-
-    private List<HuaStudentDetails> getStudentDetails(StudentDetailsDTO studentDetailsDTO, HuaUser user) {
-        List<HuaStudentDetails> listOfStudentDetails = new ArrayList<>();
-        HuaStudentDetails studentDetails = new HuaStudentDetails();
-        studentDetails.setDepartment(studentDetailsDTO.getDepartment());
-        studentDetails.setHuaUser(user);
-
-        var directionDTO = studentDetailsDTO.getDirection();
-
-        if (directionDTO != null) {
-            studentDetails.setDirection(directionDTO.getName());
-        }
-
-        listOfStudentDetails.add(studentDetails);
-
-        return listOfStudentDetails;
-    }
-
     private void setBasicInfo(StudentDTO studentDTO, HuaUser user) {
         user.setDateCreated(LocalDateTime.now());
         user.setVerified(false);
-        user.setPassword(passwordEncoder.encode("temp"));
-        user.setEmail("temp");
-        user.setUsername("temp");
+        user.setPassword(passwordEncoder.encode(TEMP));
+        user.setEmail(TEMP);
+        user.setUsername(TEMP);
 
         user.setSurname(studentDTO.getSurname());
         user.setName(studentDTO.getName());
@@ -146,5 +99,23 @@ public class StudentServiceImpl implements StudentService {
         }
 
         user.setGender(studentDTO.getGender());
+    }
+
+    private void setContactInfo(StudentDTO studentDTO, HuaUser user) {
+        user.setAddress(studentDTO.getAddress());
+        user.setCity(studentDTO.getCity());
+        user.setPostalCode(studentDTO.getPostalCode());
+        user.setMobileNumber(studentDTO.getMobileNumber());
+        user.setVatNumber(studentDTO.getVatNumber());
+    }
+
+    private void setStudentDetails(StudentDTO studentDTO, HuaUser user) {
+        user.setDepartment(studentDTO.getDepartment());
+
+        var directionDTO = studentDTO.getDirection();
+
+        if (directionDTO != null) {
+            user.setDirection(directionDTO.getName());
+        }
     }
 }
