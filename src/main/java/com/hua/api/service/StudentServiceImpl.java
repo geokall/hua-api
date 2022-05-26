@@ -65,7 +65,7 @@ public class StudentServiceImpl implements StudentService {
         if (!ObjectUtils.isEmpty(mobileNumber)) {
             userRepository.findByMobileNumber(mobileNumber)
                     .ifPresent(student -> {
-                        throw new HuaNotFound("Υπάρχει φοιτητής με το ίδιο κινητό");
+                        throw new HuaNotFound("Υπάρχει φοιτητής με το ίδιο τηλέφωνο επικοινωνίας");
                     });
         }
 

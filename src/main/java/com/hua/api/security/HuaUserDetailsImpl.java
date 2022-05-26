@@ -32,7 +32,7 @@ public class HuaUserDetailsImpl implements UserDetailsService {
         HuaUser user = userRepository.findByUsername(username);
 
         if (user == null) {
-            throw new HuaNotFound("Could not find user with username = " + username);
+            throw new HuaNotFound("Δεν βρέθηκε ο χρήστης: " + username);
         }
 
         List<GrantedAuthority> grantedAuthorities = new ArrayList<>();
