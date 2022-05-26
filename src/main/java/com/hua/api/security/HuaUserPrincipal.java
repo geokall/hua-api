@@ -21,6 +21,8 @@ public class HuaUserPrincipal implements UserDetails {
 
     private String email;
 
+    private boolean isVerified;
+
     private Collection<? extends GrantedAuthority> authorities;
 
     public Long getId() {
@@ -37,6 +39,10 @@ public class HuaUserPrincipal implements UserDetails {
 
     public String getEmail() {
         return email;
+    }
+
+    public boolean isVerified() {
+        return isVerified;
     }
 
     @Override

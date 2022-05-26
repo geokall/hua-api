@@ -49,6 +49,7 @@ public class HuaUserDetailsImpl implements UserDetailsService {
                 .surname(user.getSurname())
                 .name(user.getName())
                 .email(user.getEmail())
+                .isVerified(user.getVerified())
                 .authorities(grantedAuthorities)
                 .build();
     }

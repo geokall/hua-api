@@ -3,6 +3,7 @@ package com.hua.api.controller;
 import com.hua.api.dto.JwtResponseDTO;
 import com.hua.api.dto.LoginCredentialsDTO;
 import com.hua.api.exception.HuaExceptionHandler;
+import com.hua.api.exception.HuaForbidden;
 import com.hua.api.exception.HuaNotFound;
 import com.hua.api.security.HuaUserPrincipal;
 import com.hua.api.security.JwtUtils;
@@ -43,14 +44,19 @@ public class AuthController extends HuaExceptionHandler {
     public ResponseEntity<JwtResponseDTO> authenticateUser(@RequestBody LoginCredentialsDTO dto) {
 
         try {
-            LOGGER.info("Trying to authenticate");
+            LOGGER.info("Trying to authenticate username: " + dto.getUsername());
             var authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(dto.getUsername(), dto.getPassword()));
 
             HuaUserPrincipal userDetails = (HuaUserPrincipal) authentication.getPrincipal();
 
+            if (!userDetails.isVerified()) {
+                LOGGER.info("User is locked");
+                throw new HuaForbidden("Ο λογαριασμός δεν είναι ενεργοποιημένος");
+            }
+
             String jwt = jwtUtils.generateJwtToken(authentication);
-            LOGGER.info("Generated jwt");
+            LOGGER.info("Generated jwt successfully");
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
@@ -59,9 +65,8 @@ public class AuthController extends HuaExceptionHandler {
             return ResponseEntity.ok().body(jwtResponseDTO);
         } catch (BadCredentialsException e) {
             LOGGER.info(e.getMessage());
-            throw new HuaNotFound("User not found");
+            throw new HuaNotFound("Λάθος κωδικός");
         }
-
     }
 
 
