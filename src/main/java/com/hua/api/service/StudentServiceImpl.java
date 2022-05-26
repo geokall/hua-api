@@ -3,6 +3,7 @@ package com.hua.api.service;
 import com.hua.api.dto.*;
 import com.hua.api.entity.HuaUser;
 import com.hua.api.exception.HuaNotFound;
+import com.hua.api.repository.RoleRepository;
 import com.hua.api.repository.UserRepository;
 import com.hua.api.utilities.HuaUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,14 +18,18 @@ import java.util.*;
 public class StudentServiceImpl implements StudentService {
 
     private static final String TEMP = "temp";
+    private static final String READER_ROLE = "READER";
 
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Autowired
     public StudentServiceImpl(UserRepository userRepository,
+                              RoleRepository roleRepository,
                               PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -40,6 +45,9 @@ public class StudentServiceImpl implements StudentService {
         setStudentDetails(studentDTO, user);
 
         setContactInfo(studentDTO, user);
+
+        roleRepository.findByName(READER_ROLE)
+                .ifPresent(user::addRole);
 
         HuaUser savedUser = userRepository.save(user);
 

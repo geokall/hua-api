@@ -95,6 +95,17 @@ public class HuaUser implements Serializable {
     )
     private Set<HuaRole> roles = new HashSet<>();
 
+
+    public void addRole(HuaRole role) {
+        roles.add(role);
+        role.getRoles().add(this);
+    }
+
+    public void removeRole(HuaRole role) {
+        roles.remove(role);
+        role.getRoles().remove(this);
+    }
+
     public HuaUser() {
     }
 
