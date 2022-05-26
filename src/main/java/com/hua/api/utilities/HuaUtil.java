@@ -4,6 +4,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.text.Format;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
@@ -20,17 +21,23 @@ public class HuaUtil {
         return java.sql.Date.valueOf(dateToConvert);
     }
 
-    public static Date formatStringToDate(String protocolDate) {
+    public static Date formatStringToDate(String date) {
         SimpleDateFormat formatter = new SimpleDateFormat(DAY_MONTH_YEAR_PATTERN);
         Date yearMonthDay = null;
 
         try {
-            yearMonthDay = formatter.parse(protocolDate);
+            yearMonthDay = formatter.parse(date);
         } catch (ParseException e) {
             LOGGER.info(e.getMessage());
         }
 
         return yearMonthDay;
+    }
+
+    public static String formatDateToString(Date date) {
+        Format formatter = new SimpleDateFormat(DAY_MONTH_YEAR_PATTERN);
+
+        return formatter.format(date);
     }
 
 //    public static String generateUsername(String surname) {

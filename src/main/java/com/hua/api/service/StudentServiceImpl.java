@@ -7,6 +7,8 @@ import com.hua.api.repository.RoleRepository;
 import com.hua.api.repository.UserRepository;
 import com.hua.api.utilities.HuaUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
@@ -58,6 +60,11 @@ public class StudentServiceImpl implements StudentService {
                 });
 
         return savedUser.getId();
+    }
+
+    @Override
+    public Page<StudentDTO> findAllStudents(Pageable pageable) {
+        return userRepository.findAll(pageable).map(this::toStudentDTO);
     }
 
 
@@ -125,5 +132,36 @@ public class StudentServiceImpl implements StudentService {
         if (directionDTO != null) {
             user.setDirection(directionDTO.getName());
         }
+    }
+
+    private StudentDTO toStudentDTO(HuaUser user) {
+        StudentDTO dto = new StudentDTO();
+        dto.setId(user.getId());
+        dto.setDateChanged(user.getDateChanged());
+        dto.setDateCreated(user.getDateCreated());
+        dto.setAddress(user.getAddress());
+        dto.setCity(user.getCity());
+        dto.setDepartment(user.getDepartment());
+        dto.setEmail(user.getEmail());
+        dto.setUsername(user.getUsername());
+        dto.setIsVerified(user.getVerified() != null ? user.getVerified() : false);
+
+        StudentDirectionDTO direction = new StudentDirectionDTO();
+        direction.setName(user.getDirection());
+        dto.setDirection(direction);
+
+        String birthDateFormatted = HuaUtil.formatDateToString(user.getBirthDate());
+        dto.setBirthDate(birthDateFormatted);
+
+        dto.setGender(user.getGender());
+        dto.setFatherName(user.getFatherName());
+        dto.setMobileNumber(user.getMobileNumber());
+        dto.setMotherName(user.getMotherName());
+        dto.setName(user.getName());
+        dto.setSurname(user.getSurname());
+        dto.setPostalCode(user.getPostalCode());
+        dto.setVatNumber(user.getVatNumber());
+
+        return dto;
     }
 }
