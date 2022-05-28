@@ -69,6 +69,7 @@ public class StudentServiceImpl implements StudentService {
                 .orElseThrow(() -> new HuaNotFound("Δεν βρέθηκε ο φοιτητής με id: " + id));
 
         huaUser.setVerified(studentDTO.getIsVerified());
+        huaUser.setDateChanged(LocalDateTime.now());
         userRepository.save(huaUser);
     }
 
@@ -162,8 +163,10 @@ public class StudentServiceImpl implements StudentService {
         direction.setName(user.getDirection());
         dto.setDirection(direction);
 
-        String birthDateFormatted = HuaUtil.formatDateToString(user.getBirthDate());
-        dto.setBirthDate(birthDateFormatted);
+        if (user.getBirthDate() != null) {
+            String birthDateFormatted = HuaUtil.formatDateToString(user.getBirthDate());
+            dto.setBirthDate(birthDateFormatted);
+        }
 
         dto.setGender(user.getGender());
         dto.setFatherName(user.getFatherName());
