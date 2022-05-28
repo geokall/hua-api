@@ -30,10 +30,19 @@ public class StudentController extends HuaExceptionHandler {
         return ResponseEntity.ok(studentId);
     }
 
-    @GetMapping("/all")
-    public ResponseEntity<Page<StudentDTO>> findAllStudents(Pageable pageable) {
+    @PutMapping("/update/{id}")
+    public ResponseEntity<Long> updateStudent(@PathVariable Long id,
+                                              @RequestBody StudentDTO dto) {
 
-        Page<StudentDTO> response = studentService.findAllStudents(pageable);
+        studentService.updateStudent(id, dto);
+
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<List<StudentDTO>> findAllStudents(Pageable pageable) {
+
+        List<StudentDTO> response = studentService.findAllStudents(pageable);
 
         return ResponseEntity.ok(response);
     }

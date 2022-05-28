@@ -15,6 +15,7 @@ import org.springframework.util.ObjectUtils;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class StudentServiceImpl implements StudentService {
@@ -63,8 +64,19 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
-    public Page<StudentDTO> findAllStudents(Pageable pageable) {
-        return userRepository.findAll(pageable).map(this::toStudentDTO);
+    public void updateStudent(Long id, StudentDTO studentDTO) {
+        HuaUser huaUser = userRepository.findById(id)
+                .orElseThrow(() -> new HuaNotFound("Δεν βρέθηκε ο φοιτητής με id: " + id));
+
+        huaUser.setVerified(studentDTO.getIsVerified());
+        userRepository.save(huaUser);
+    }
+
+    @Override
+    public List<StudentDTO> findAllStudents(Pageable pageable) {
+        return userRepository.findAll(pageable).stream()
+                .map(this::toStudentDTO)
+                .collect(Collectors.toList());
     }
 
 
