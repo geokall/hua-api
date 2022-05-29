@@ -83,6 +83,15 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
+    public void updatePassword(Long id, PasswordDTO passwordDTO) {
+        HuaUser huaUser = userRepository.findById(id)
+                .orElseThrow(() -> new HuaNotFound("Δεν βρέθηκε ο φοιτητής με id: " + id));
+
+        huaUser.setPassword(passwordEncoder.encode(passwordDTO.getPassword()));
+        userRepository.save(huaUser);
+    }
+
+    @Override
     public List<StudentDTO> findAllStudents(Pageable pageable) {
         return userRepository.findAll(pageable).stream()
                 .map(this::toStudentDTO)

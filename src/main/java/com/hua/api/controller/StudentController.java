@@ -1,5 +1,6 @@
 package com.hua.api.controller;
 
+import com.hua.api.dto.PasswordDTO;
 import com.hua.api.dto.StudentDTO;
 import com.hua.api.exception.HuaExceptionHandler;
 import com.hua.api.service.StudentService;
@@ -42,6 +43,15 @@ public class StudentController extends HuaExceptionHandler {
                                               @RequestBody StudentDTO dto) {
 
         studentService.updateStudent(id, dto);
+
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/update-password/{id}")
+    public ResponseEntity<Long> updatePassword(@PathVariable Long id,
+                                              @RequestBody PasswordDTO dto) {
+
+        studentService.updatePassword(id, dto);
 
         return ResponseEntity.ok().build();
     }
