@@ -18,6 +18,6 @@ INSERT INTO hua.hua_role (name) values ('ADMIN'), ('READER');
 CREATE EXTENSION if not exists pgcrypto;
 
 INSERT INTO hua.hua_user (address, birth_date, city, changed_date, created_date, department, direction, email, father_name, gender, mobile_number, mother_name, name, password, postal_code, surname, username, vat_number, is_verified)
-VALUES ('Θησέως 70', '1995-01-01', 'Καλλιθέα', null, '1995-01-01 08:25:12.000000', 'ΤΜΗΜΑ ΠΛΗΡΟΦΟΡΙΚΗΣ ΚΑΙ ΤΗΛΕΜΑΤΙΚΗΣ (ΜΠΣ)', null, 'itp1@hua.gr', null, 'FEMALE', '2109549101', null, 'Γραμματεία', crypt('admin', gen_salt('bf')), 17671, null, 'itp1', '012345678', true);
+VALUES ('Θησέως 70', '1995-01-01', 'Καλλιθέα', null, '1995-01-01 08:25:12.000000', 'ΤΜΗΜΑ ΠΛΗΡΟΦΟΡΙΚΗΣ ΚΑΙ ΤΗΛΕΜΑΤΙΚΗΣ (ΜΠΣ)', null, 'itp1@hua.gr', 'Κάποιο πατρώνυμο', 'FEMALE', '2109549101', 'Κάποιο μητρώνυμο', 'Γραμματεία', crypt('admin', gen_salt('bf')), 17671, 'Χαροκόπειο', 'itp1', '012345678', true);
 
 INSERT INTO hua.user_role VALUES (1, 1);
