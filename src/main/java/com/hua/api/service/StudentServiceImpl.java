@@ -64,12 +64,21 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
+    public StudentDTO findStudent(Long id) {
+        HuaUser huaUser = userRepository.findById(id)
+                .orElseThrow(() -> new HuaNotFound("Δεν βρέθηκε ο φοιτητής με id: " + id));
+
+        return toStudentDTO(huaUser);
+    }
+
+    @Override
     public void updateStudent(Long id, StudentDTO studentDTO) {
         HuaUser huaUser = userRepository.findById(id)
                 .orElseThrow(() -> new HuaNotFound("Δεν βρέθηκε ο φοιτητής με id: " + id));
 
         huaUser.setVerified(studentDTO.getIsVerified());
         huaUser.setDateChanged(LocalDateTime.now());
+
         userRepository.save(huaUser);
     }
 

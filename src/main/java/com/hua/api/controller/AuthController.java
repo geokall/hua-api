@@ -72,6 +72,7 @@ public class AuthController extends HuaExceptionHandler {
 
     private JwtResponseDTO toJwtResponseDTO(String jwt, HuaUserPrincipal userPrincipal) {
         JwtResponseDTO jwtResponseDTO = new JwtResponseDTO();
+        jwtResponseDTO.setId(userPrincipal.getId());
         jwtResponseDTO.setToken(jwt);
         jwtResponseDTO.setUsername(userPrincipal.getUsername());
         jwtResponseDTO.setSurname(userPrincipal.getSurname());

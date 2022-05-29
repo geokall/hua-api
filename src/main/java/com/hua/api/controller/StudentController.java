@@ -4,7 +4,6 @@ import com.hua.api.dto.StudentDTO;
 import com.hua.api.exception.HuaExceptionHandler;
 import com.hua.api.service.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -26,6 +25,14 @@ public class StudentController extends HuaExceptionHandler {
     public ResponseEntity<Long> createStudent(@RequestBody StudentDTO studentDTO) {
 
         Long studentId = studentService.createStudent(studentDTO);
+
+        return ResponseEntity.ok(studentId);
+    }
+
+    @GetMapping("/find/{id}")
+    public ResponseEntity<StudentDTO> findStudent(@PathVariable Long id) {
+
+        StudentDTO studentId = studentService.findStudent(id);
 
         return ResponseEntity.ok(studentId);
     }
