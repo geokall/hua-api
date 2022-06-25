@@ -1,0 +1,39 @@
+version: '3.1'
+services:
+
+  hua-db:
+    image: postgres:14
+    container_name: hua-db
+    expose:
+      - 5432
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - 'pgdata:/var/lib/postgresql/data/'
+      - './insertData.sql:/docker-entrypoint-initdb.d/insertData.sql'
+
+  hua-api:
+    build:
+      context: .
+      dockerfile: hua-api.Dockerfile
+    container_name: hua-api
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://hua-db:5432/hua
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=none
+    ports:
+      - "8080:8080"
+    depends_on:
+      - hua-db
+
+volumes:
+  pgdata:
