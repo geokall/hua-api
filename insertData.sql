@@ -3,7 +3,7 @@ create schema if not exists hua;
 
 create table hua.hua_role (id  bigserial not null, name varchar(255) not null, primary key (id));
 create table hua.hua_user (id  bigserial not null, address varchar(255), birth_date date, city varchar(255), changed_date timestamp, created_date timestamp not null, department varchar(255), direction varchar(255), email varchar(255) not null, father_name varchar(255), gender varchar(255), mobile_number varchar(20) not null, mother_name varchar(255), name varchar(255) not null, password varchar(255) not null, postal_code varchar(255), surname varchar(255), username varchar(255) not null, vat_number varchar(20) not null, is_verified boolean, primary key (id));
-create table hua.user_role (user_id int8 not null, role_id int8 not null, primary key (user_id, role_id))
+create table hua.user_role (user_id int8 not null, role_id int8 not null, primary key (user_id, role_id));
 alter table hua.hua_user add constraint UK_lt7xr6y863ahhrwx42elvav1c unique (email);
 alter table hua.hua_user add constraint UK_odu71lttaqh7ndnrs2vq8mg58 unique (mobile_number);
 alter table hua.hua_user add constraint UK_d807qo5m5t0ndhoo7l5wgs5u3 unique (username);
