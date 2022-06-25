@@ -127,7 +127,8 @@
 	</profiles>
 
 	<build>
-		<finalName>hua-api-docker</finalName>
+<!--		//specific target name-->
+		<finalName>hua-api</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
