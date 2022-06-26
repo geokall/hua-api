@@ -1,7 +1,7 @@
 package com.hua.api.entity;
 
-import com.hua.api.converter.PostgreSQLEnumType;
 import com.hua.api.enums.GenderEnum;
+import com.hua.api.enums.MyPostgreSQLEnumType;
 import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.springframework.data.annotation.CreatedDate;
@@ -10,11 +10,14 @@ import org.springframework.data.annotation.LastModifiedDate;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 
 @Entity
 @Table(name = "HUA_USER")
-@TypeDef(name = "pgsql_enum", typeClass = PostgreSQLEnumType.class)
+@TypeDef(name = "pgsql_enum", typeClass = MyPostgreSQLEnumType.class)
 public class HuaUser implements Serializable {
 
     @Id

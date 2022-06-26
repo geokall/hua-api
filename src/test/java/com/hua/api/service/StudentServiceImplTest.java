@@ -1,13 +1,21 @@
 package com.hua.api.service;
 
 import com.hua.api.dto.StudentDTO;
+import com.hua.api.dto.StudentDirectionDTO;
+import com.hua.api.enums.GenderEnum;
+import org.h2.tools.Server;
 import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.sql.SQLException;
+import java.util.Date;
+
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -18,9 +26,27 @@ public class StudentServiceImplTest {
 
     @Test
     public void findStudent() {
-        StudentDTO dto = new StudentDTO();
-        dto.setId(1L);
+        var request = new StudentDTO();
+        request.setAddress("address");
+        request.setCity("city");
+        request.setBirthDate(new Date().toString());
+        request.setDepartment("department");
+        request.setDirection(new StudentDirectionDTO());
+        request.setEmail("email");
+        request.setFatherName("father name");
+        request.setMotherName("mother name");
+        request.setGender(GenderEnum.MALE);
+        request.setIsVerified(false);
+        request.setMobileNumber("2100000012");
+        request.setName("name");
+        request.setSurname("surname");
+        request.setVatNumber("vat number");
+        request.setUsername("username");
+
+        studentService.createStudent(request);
+
         StudentDTO student = studentService.findStudent(1L);
-        assertEquals(student.getId(), dto.getId());
+        assertNotNull(student);
+        assertEquals(1L, student.getId().longValue());
     }
 }
