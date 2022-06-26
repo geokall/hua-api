@@ -1,4 +1,5 @@
-drop schema if exists hua;
+drop schema if exists hua cascade;
+
 create schema if not exists hua;
 
 create table hua.hua_role (id  bigserial not null, name varchar(255) not null, primary key (id));
