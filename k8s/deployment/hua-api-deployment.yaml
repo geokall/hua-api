@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hua-api-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: hua-api
+  template:
+    metadata:
+      labels:
+        component: hua-api
+    spec:
+      containers:
+        - name: hua-api
+          image: 'geokall/hua-api:2022'
+          ports:
+            - containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: hua-api-config
