@@ -56,9 +56,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .antMatchers("/api/auth/**").permitAll()
-                .antMatchers("/student/create").hasAnyAuthority("ADMIN")
-                .antMatchers("/student/update/**").hasAnyAuthority("ADMIN")
-                .antMatchers("/student/all").hasAnyAuthority("ADMIN")
+                .antMatchers("/api/student/create").hasAnyAuthority("ADMIN")
+                .antMatchers("/api/student/update/**").hasAnyAuthority("ADMIN")
+                .antMatchers("/api/student/all").hasAnyAuthority("ADMIN")
                 .anyRequest().authenticated();
 
         http.addFilterBefore(authTokenFilter, UsernamePasswordAuthenticationFilter.class);
