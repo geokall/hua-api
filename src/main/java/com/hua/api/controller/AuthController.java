@@ -25,8 +25,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("auth")
-public class AuthController extends HuaExceptionHandler {
+public class AuthController extends BaseController {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthController.class);
 
@@ -40,7 +39,7 @@ public class AuthController extends HuaExceptionHandler {
         this.jwtUtils = jwtUtils;
     }
 
-    @PostMapping("/login")
+    @PostMapping("/auth/login")
     public ResponseEntity<JwtResponseDTO> authenticateUser(@RequestBody LoginCredentialsDTO dto) {
 
         try {

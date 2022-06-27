@@ -12,8 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/student")
-public class StudentController extends HuaExceptionHandler {
+public class StudentController extends BaseController {
 
     private final StudentService studentService;
 
@@ -22,7 +21,7 @@ public class StudentController extends HuaExceptionHandler {
         this.studentService = studentService;
     }
 
-    @PostMapping("/create")
+    @PostMapping("/student/create")
     public ResponseEntity<Long> createStudent(@RequestBody StudentDTO studentDTO) {
 
         Long studentId = studentService.createStudent(studentDTO);
@@ -30,7 +29,7 @@ public class StudentController extends HuaExceptionHandler {
         return ResponseEntity.ok(studentId);
     }
 
-    @GetMapping("/find/{id}")
+    @GetMapping("/student/find/{id}")
     public ResponseEntity<StudentDTO> findStudent(@PathVariable Long id) {
 
         StudentDTO studentId = studentService.findStudent(id);
@@ -38,7 +37,7 @@ public class StudentController extends HuaExceptionHandler {
         return ResponseEntity.ok(studentId);
     }
 
-    @PutMapping("/update/{id}")
+    @PutMapping("/student/update/{id}")
     public ResponseEntity<Long> updateStudent(@PathVariable Long id,
                                               @RequestBody StudentDTO dto) {
 
@@ -47,7 +46,7 @@ public class StudentController extends HuaExceptionHandler {
         return ResponseEntity.ok().build();
     }
 
-    @PutMapping("/update-password/{id}")
+    @PutMapping("/student/update-password/{id}")
     public ResponseEntity<Long> updatePassword(@PathVariable Long id,
                                               @RequestBody PasswordDTO dto) {
 
@@ -56,7 +55,7 @@ public class StudentController extends HuaExceptionHandler {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/all")
+    @GetMapping("/student/all")
     public ResponseEntity<List<StudentDTO>> findAllStudents(Pageable pageable) {
 
         List<StudentDTO> response = studentService.findAllStudents(pageable);
