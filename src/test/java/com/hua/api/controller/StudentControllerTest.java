@@ -40,7 +40,7 @@ public class StudentControllerTest {
         when(studentService.findStudent(anyLong()))
                 .thenReturn(dto);
 
-        mvc.perform(MockMvcRequestBuilders.get("/student/find/1")
+        mvc.perform(MockMvcRequestBuilders.get("/api/student/find/1")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk()).andExpect(jsonPath("id", is(1)));
     }
