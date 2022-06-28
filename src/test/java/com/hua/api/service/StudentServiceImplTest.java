@@ -3,15 +3,12 @@ package com.hua.api.service;
 import com.hua.api.dto.StudentDTO;
 import com.hua.api.dto.StudentDirectionDTO;
 import com.hua.api.enums.GenderEnum;
-import org.h2.tools.Server;
 import org.junit.Test;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.sql.SQLException;
 import java.util.Date;
 
 import static org.junit.Assert.assertEquals;
