@@ -7,7 +7,7 @@ pipeline {
 
                 script {
                     sh '''
-                        docker build -f hua-api.Dockerfile .
+                        docker build --no-cache -f hua-api.Dockerfile .
                     '''
                 }
             }
