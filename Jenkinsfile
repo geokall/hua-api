@@ -6,7 +6,9 @@ pipeline {
                 echo 'Building docker image...'
 
                 script {
-                    sh 'docker build'
+                    sh '''
+                        docker build -f hua-api.Dockerfile .
+                    '''
                 }
             }
         }
