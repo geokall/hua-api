@@ -37,6 +37,7 @@ pipeline {
                         HEAD_COMMIT=$(git rev-parse --short HEAD)
                         TAG=$HEAD_COMMIT-$BUILD_ID
                         kubectl config use-context microk8s
+                        echo $DOCKER_TOKEN | docker login $DOCKER_SERVER -u $DOCKER_USER --password-stdin
                         kubectl set image deployment/api-deploy api=$DOCKER_PREFIX:$TAG
                         
                         RUNNING_TAG=$(kubectl get pods -o=jsonpath="{.items[*].spec.containers[*].image}" -l component=api | grep $TAG)
