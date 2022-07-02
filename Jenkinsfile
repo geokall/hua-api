@@ -4,7 +4,7 @@ pipeline {
         DOCKER_TOKEN = credentials('dockerhub-hua-token')
         DOCKER_USER = 'ba055482'
         // DOCKER_SERVER = 'ghcr.io'
-        DOCKER_PREFIX = 'hua-api'
+        DOCKER_PREFIX = 'ba055482/hua-api'
     }
 
     stages {
