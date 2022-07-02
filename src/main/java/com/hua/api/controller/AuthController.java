@@ -2,7 +2,6 @@ package com.hua.api.controller;
 
 import com.hua.api.dto.JwtResponseDTO;
 import com.hua.api.dto.LoginCredentialsDTO;
-import com.hua.api.exception.HuaExceptionHandler;
 import com.hua.api.exception.HuaForbidden;
 import com.hua.api.exception.HuaNotFound;
 import com.hua.api.security.HuaUserPrincipal;
@@ -18,7 +17,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
