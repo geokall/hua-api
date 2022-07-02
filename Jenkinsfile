@@ -46,14 +46,14 @@ pipeline {
                 }
             }
         }
+    }
 
-        post {
-            success {
-                slackSend("API build deployed successfully - ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Open>)")
-            }
-            failure {
-                slackSend(failOnError: true, message: "API build failed  - ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Open>)")
-            }
+    post {
+        success {
+            slackSend("API build deployed successfully - ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Open>)")
+        }
+        failure {
+            slackSend(failOnError: true, message: "API build failed  - ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Open>)")
         }
     }
 }
