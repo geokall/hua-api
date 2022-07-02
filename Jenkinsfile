@@ -1,7 +1,7 @@
 pipeline {
     agent any
     environment {
-        DOCKER_TOKEN = credentials('github-hua-registry')
+        DOCKER_TOKEN = credentials('github-hua-token')
         DOCKER_USER = 'ba055482'
         DOCKER_SERVER = 'ghcr.io'
         DOCKER_PREFIX = 'ghcr.io/ba055482/hua-api'
