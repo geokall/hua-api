@@ -77,6 +77,15 @@ public class StudentServiceImpl implements StudentService {
 
         huaUser.setVerified(studentDTO.getIsVerified());
         huaUser.setDateChanged(LocalDateTime.now());
+        huaUser.setSurname(studentDTO.getSurname());
+        huaUser.setName(studentDTO.getName());
+        huaUser.setFatherName(studentDTO.getFatherName());
+        huaUser.setMotherName(studentDTO.getMotherName());
+        huaUser.setAddress(studentDTO.getAddress());
+        huaUser.setCity(studentDTO.getCity());
+        huaUser.setPostalCode(studentDTO.getPostalCode());
+        huaUser.setMobileNumber(studentDTO.getMobileNumber());
+        huaUser.setVatNumber(studentDTO.getVatNumber());
 
         userRepository.save(huaUser);
     }
