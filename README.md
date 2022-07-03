@@ -1,3 +1,3 @@
-docker-compose up -d
+This is a forked project from https://github.com./geogall/hua-api  
 
-sudo chmod -R 777 /home/{yourUser}/{path_to_postgres-data_folder}
+New packages are pushed at https://hub.docker.com/r/ba055482/hua-api
