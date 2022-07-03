@@ -32,14 +32,13 @@ services:
       - SPRING_JPA_HIBERNATE_DDL_AUTO=none
     ports:
       - "8080:8080"
-    # depends_on:
-    #   - hua-db
-    # # command: ["./wait-for-db.sh", "db:5432", "--", "python", "app.py"]
-    # healthcheck:
-    #   test: ["CMD", "curl", "-f", "http://hua-db:5432"]
-    #   interval: 30s
-    #   timeout: 10s
-    #   retries: 5
+    depends_on:
+      - hua-db
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://postgres:5432"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
 volumes:
   pgdata:
