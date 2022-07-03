@@ -15,3 +15,5 @@ Below are enlisted some key points:
 - Data are persisted on a PostgreSQL database, which is not part of this project.
 - Tests use the H2 (in-memory) database for simplicity.
 - No embedded web servers are used.
+
+You can use `docker-compose` to deploy the application with a dabatase as a container locally.
