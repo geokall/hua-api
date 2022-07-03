@@ -6,7 +6,7 @@ New packages are pushed at https://github.com/users/ba055482/packages/container/
 
 ## Overview
 
-This is a the backend component of the application. It is implemented in Java, using Spring/Springboot framework.  
+This is the backend component of the application. It is implemented in Java, using Spring/Springboot framework.  
 The reason we selected this technology stack is because of prior experience on Java/Spring.
 Its puprose is to handle HTTP requests originating from the [UI component](https://github.com/ba055482/hua-ui) and perform basic CRUD operations.
 
