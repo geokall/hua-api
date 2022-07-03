@@ -1,0 +1,249 @@
+openapi: 3.0.1
+info:
+  title: OpenAPI definition
+  version: v0
+servers:
+- url: https://huademo.gotdns.ch
+  description: Production url
+paths:
+  /api/student/update/{id}:
+    put:
+      tags:
+      - student-controller
+      operationId: updateStudent
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StudentDTO'
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: integer
+                format: int64
+  /api/student/update-password/{id}:
+    put:
+      tags:
+      - student-controller
+      operationId: updatePassword
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordDTO'
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: integer
+                format: int64
+  /api/student/create:
+    post:
+      tags:
+      - student-controller
+      operationId: createStudent
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StudentDTO'
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: integer
+                format: int64
+  /api/auth/login:
+    post:
+      tags:
+      - auth-controller
+      operationId: authenticateUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginCredentialsDTO'
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/JwtResponseDTO'
+  /api/student/find/{id}:
+    get:
+      tags:
+      - student-controller
+      operationId: findStudent
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: '#/components/schemas/StudentDTO'
+  /api/student/all:
+    get:
+      tags:
+      - student-controller
+      operationId: findAllStudents
+      parameters:
+      - name: pageable
+        in: query
+        required: true
+        schema:
+          $ref: '#/components/schemas/Pageable'
+      responses:
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StudentDTO'
+components:
+  schemas:
+    StudentDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        username:
+          type: string
+        email:
+          type: string
+        dateCreated:
+          type: string
+          format: date-time
+        dateChanged:
+          type: string
+          format: date-time
+        isVerified:
+          type: boolean
+        surname:
+          type: string
+        name:
+          type: string
+        fatherName:
+          type: string
+        motherName:
+          type: string
+        birthDate:
+          type: string
+        gender:
+          type: string
+          enum:
+          - MALE
+          - FEMALE
+        department:
+          type: string
+        direction:
+          $ref: '#/components/schemas/StudentDirectionDTO'
+        address:
+          type: string
+        city:
+          type: string
+        postalCode:
+          type: string
+        mobileNumber:
+          type: string
+        vatNumber:
+          type: string
+    StudentDirectionDTO:
+      type: object
+      properties:
+        name:
+          type: string
+    PasswordDTO:
+      type: object
+      properties:
+        password:
+          type: string
+    LoginCredentialsDTO:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+    JwtResponseDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        token:
+          type: string
+        username:
+          type: string
+        surname:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        roles:
+          type: array
+          items:
+            type: string
+    Pageable:
+      type: object
+      properties:
+        offset:
+          type: integer
+          format: int64
+        sort:
+          $ref: '#/components/schemas/Sort'
+        pageNumber:
+          type: integer
+          format: int32
+        pageSize:
+          type: integer
+          format: int32
+        paged:
+          type: boolean
+        unpaged:
+          type: boolean
+    Sort:
+      type: object
+      properties:
+        sorted:
+          type: boolean
+        unsorted:
+          type: boolean
+        empty:
+          type: boolean
