@@ -46,6 +46,18 @@ pipeline {
                 }
             }
         }
+
+        stage('Cleanup') {
+            steps {
+                echo 'Deleting docker resources...'
+
+                script {
+                    sh '''
+                        docker system prune -a -f
+                    '''
+                }
+            }
+        }
     }
 
     post {
