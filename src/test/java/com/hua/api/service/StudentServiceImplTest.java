@@ -42,7 +42,7 @@ public class StudentServiceImplTest {
 
         studentService.createStudent(request);
 
-        StudentDTO student = studentService.findStudent(2L);
+        StudentDTO student = studentService.findStudent(1L);
         assertNotNull(student);
         assertEquals(1L, student.getId().longValue());
     }
