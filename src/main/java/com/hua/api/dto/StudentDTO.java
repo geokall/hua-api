@@ -47,4 +47,6 @@ public class StudentDTO {
     private String mobileNumber;
 
     private String vatNumber;
+
+    private FileDTO file;
 }

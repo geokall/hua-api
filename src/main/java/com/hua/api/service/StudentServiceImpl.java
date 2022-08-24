@@ -6,15 +6,23 @@ import com.hua.api.exception.HuaNotFound;
 import com.hua.api.repository.RoleRepository;
 import com.hua.api.repository.UserRepository;
 import com.hua.api.utilities.HuaUtil;
+import com.hua.api.utilities.MinioUtil;
+import io.minio.MinioClient;
+import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static com.hua.api.utilities.MinioUtil.HUA_BUCKET;
 
 @Service
 public class StudentServiceImpl implements StudentService {
@@ -25,16 +33,20 @@ public class StudentServiceImpl implements StudentService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final MinioUtil minioUtil;
 
     @Autowired
     public StudentServiceImpl(UserRepository userRepository,
                               RoleRepository roleRepository,
-                              PasswordEncoder passwordEncoder) {
+                              PasswordEncoder passwordEncoder,
+                              MinioUtil minioUtil) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
+        this.minioUtil = minioUtil;
     }
 
+    @SneakyThrows
     @Override
     public Long createStudent(StudentDTO studentDTO) {
 
@@ -47,6 +59,10 @@ public class StudentServiceImpl implements StudentService {
         setStudentDetails(studentDTO, user);
 
         setContactInfo(studentDTO, user);
+
+        FileDTO fileDTO = studentDTO.getFile();
+
+        saveFileOnDbAndMinio(user, fileDTO);
 
         roleRepository.findByName(READER_ROLE)
                 .ifPresent(user::addRole);
@@ -204,5 +220,21 @@ public class StudentServiceImpl implements StudentService {
         dto.setVatNumber(user.getVatNumber());
 
         return dto;
+    }
+
+    private void saveFileOnDbAndMinio(HuaUser user, FileDTO fileDTO) throws IOException {
+        String fileName = fileDTO.getFileName();
+
+        if (!ObjectUtils.isEmpty(fileName)) {
+            user.setFileName(fileName);
+            user.setDateFileCreated(LocalDateTime.now());
+
+            String actualFile = fileDTO.getActualFile();
+            byte[] decodedFile = Base64.getDecoder().decode(actualFile);
+            InputStream targetStream = new ByteArrayInputStream(decodedFile);
+            long length = targetStream.available();
+
+            minioUtil.uploadFile(HUA_BUCKET, fileName, targetStream, length, fileDTO.getMimeType());
+        }
     }
 }

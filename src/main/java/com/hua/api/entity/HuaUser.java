@@ -88,6 +88,13 @@ public class HuaUser implements Serializable {
     @Column(name = "is_verified")
     private Boolean verified;
 
+    @Column(name = "file_name")
+    private String fileName;
+
+    @CreatedDate
+    @Column(name = "date_file_created")
+    private LocalDateTime dateFileCreated;
+
     @ManyToMany(cascade = {
             CascadeType.PERSIST,
             CascadeType.MERGE
@@ -270,6 +277,22 @@ public class HuaUser implements Serializable {
 
     public void setVerified(Boolean verified) {
         this.verified = verified;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
+
+    public LocalDateTime getDateFileCreated() {
+        return dateFileCreated;
+    }
+
+    public void setDateFileCreated(LocalDateTime dateFileCreated) {
+        this.dateFileCreated = dateFileCreated;
     }
 
     public Set<HuaRole> getRoles() {
