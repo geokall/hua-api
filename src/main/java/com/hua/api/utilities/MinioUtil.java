@@ -1,8 +1,11 @@
 package com.hua.api.utilities;
 
+import com.hua.api.dto.FileDTO;
 import io.minio.MinioClient;
-import io.minio.errors.InvalidEndpointException;
-import io.minio.errors.InvalidPortException;
+import io.minio.Result;
+import io.minio.errors.*;
+import io.minio.messages.Item;
+import lombok.SneakyThrows;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,6 +14,11 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.io.InputStream;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.List;
 
 @Component
 public class MinioUtil {
@@ -71,5 +79,35 @@ public class MinioUtil {
         }
 
         return file;
+    }
+
+    @SneakyThrows
+    public List<FileDTO> getFilesByUsername(String username, LocalDate from, LocalDate to) {
+        List<FileDTO> files = new ArrayList<>();
+
+        LOGGER.info("Fetching all files by username: " + username);
+        Iterable<Result<Item>> results = minioClient.listObjects(username);
+
+        for (Result<Item> result : results) {
+            Object fileName = result.get().get("Key");
+            Object lastModifiedKey = result.get().get("LastModified");
+
+            LocalDate lastModifiedDate = LocalDate.parse(lastModifiedKey.toString(),
+                    DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSX"));
+
+            if (lastModifiedDate.isAfter(from) && lastModifiedDate.isBefore(to)) {
+                byte[] file = getFile(username, String.valueOf(fileName));
+                String fileEncoded = Base64.getEncoder().encodeToString(file);
+
+                FileDTO fileDTO = new FileDTO();
+
+                fileDTO.setActualFile(fileEncoded);
+                fileDTO.setFileName(String.valueOf(fileName));
+
+                files.add(fileDTO);
+            }
+        }
+
+        return files;
     }
 }

@@ -1,6 +1,5 @@
 package com.hua.api.utilities;
 
-import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,6 +10,7 @@ import java.time.LocalDate;
 import java.util.Date;
 
 public class HuaUtil {
+
     private static final Logger LOGGER = LoggerFactory.getLogger(HuaUtil.class);
 
     public static final String DAY_MONTH_YEAR_PATTERN = "dd/MM/yyyy";

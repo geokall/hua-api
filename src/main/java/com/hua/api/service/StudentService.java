@@ -4,8 +4,10 @@ import com.hua.api.dto.FileDTO;
 import com.hua.api.dto.PasswordDTO;
 import com.hua.api.dto.StudentDTO;
 import org.springframework.data.domain.Pageable;
+import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
 
 public interface StudentService {
@@ -21,4 +23,6 @@ public interface StudentService {
     List<StudentDTO> findAllStudents(Pageable pageable);
 
     FileDTO fetchMinioFile(String username);
+
+    List<FileDTO> fetchMinioFiles(String username, LocalDate from, LocalDate to) throws XmlPullParserException;
 }

@@ -6,10 +6,14 @@ import com.hua.api.dto.StudentDTO;
 import com.hua.api.service.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -68,6 +72,16 @@ public class StudentController extends BaseController {
     public ResponseEntity<FileDTO> fetchMinioFile(@PathVariable String username) {
 
         FileDTO response = studentService.fetchMinioFile(username);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/student/minio-files/{username}")
+    public ResponseEntity<List<FileDTO>> fetchMinioFiles(@PathVariable String username,
+                                                         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+                                                         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) throws XmlPullParserException {
+
+        List<FileDTO> response = studentService.fetchMinioFiles(username, from, to);
 
         return ResponseEntity.ok(response);
     }

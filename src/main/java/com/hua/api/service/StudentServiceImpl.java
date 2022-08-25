@@ -17,6 +17,7 @@ import org.springframework.util.ObjectUtils;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -147,6 +148,11 @@ public class StudentServiceImpl implements StudentService {
         }
 
         return fileDTO;
+    }
+
+    @Override
+    public List<FileDTO> fetchMinioFiles(String username, LocalDate from, LocalDate to) {
+        return minioUtil.getFilesByUsername(username, from, to);
     }
 
 
