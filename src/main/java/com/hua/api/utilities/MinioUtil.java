@@ -3,6 +3,7 @@ package com.hua.api.utilities;
 import io.minio.MinioClient;
 import io.minio.errors.InvalidEndpointException;
 import io.minio.errors.InvalidPortException;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,8 +16,6 @@ import java.io.InputStream;
 public class MinioUtil {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MinioUtil.class);
-
-    public static final String HUA_BUCKET = "hua";
 
     @Value("${hua.minio.endpoint}")
     private String endPoint;
@@ -53,5 +52,24 @@ public class MinioUtil {
         } catch (Exception e) {
             LOGGER.info(e.getMessage());
         }
+    }
+
+    public byte[] getFile(String bucketName, String objName) {
+        byte[] file = null;
+
+        try {
+            boolean isExist = minioClient.bucketExists(bucketName);
+
+            if (isExist) {
+                InputStream inputStream = minioClient.getObject(bucketName, objName);
+                file = IOUtils.toByteArray(inputStream);
+
+                LOGGER.info("Fetched file fro minio with object name:" + objName);
+            }
+        } catch (Exception e) {
+            LOGGER.info(e.getMessage());
+        }
+
+        return file;
     }
 }

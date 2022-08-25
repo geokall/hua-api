@@ -7,7 +7,6 @@ import com.hua.api.repository.RoleRepository;
 import com.hua.api.repository.UserRepository;
 import com.hua.api.utilities.HuaUtil;
 import com.hua.api.utilities.MinioUtil;
-import io.minio.MinioClient;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
@@ -21,8 +20,6 @@ import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static com.hua.api.utilities.MinioUtil.HUA_BUCKET;
 
 @Service
 public class StudentServiceImpl implements StudentService {
@@ -60,9 +57,6 @@ public class StudentServiceImpl implements StudentService {
 
         setContactInfo(studentDTO, user);
 
-        FileDTO fileDTO = studentDTO.getFile();
-
-        saveFileOnDbAndMinio(user, fileDTO);
 
         roleRepository.findByName(READER_ROLE)
                 .ifPresent(user::addRole);
@@ -74,6 +68,10 @@ public class StudentServiceImpl implements StudentService {
                     HuaUser updatedUser = generateUsernameAndEmail(huaUser);
                     userRepository.save(updatedUser);
                 });
+
+        FileDTO fileDTO = studentDTO.getFile();
+
+        saveFileOnDbAndMinio(savedUser, fileDTO);
 
         return savedUser.getId();
     }
@@ -87,7 +85,7 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
-    public void updateStudent(Long id, StudentDTO studentDTO) {
+    public void updateStudent(Long id, StudentDTO studentDTO) throws IOException {
         HuaUser huaUser = userRepository.findById(id)
                 .orElseThrow(() -> new HuaNotFound("Δεν βρέθηκε ο φοιτητής με id: " + id));
 
@@ -103,7 +101,9 @@ public class StudentServiceImpl implements StudentService {
         huaUser.setMobileNumber(studentDTO.getMobileNumber());
         huaUser.setVatNumber(studentDTO.getVatNumber());
 
-        userRepository.save(huaUser);
+        FileDTO fileDTO = studentDTO.getFile();
+
+        saveFileOnDbAndMinio(huaUser, fileDTO);
     }
 
     @Override
@@ -120,6 +120,33 @@ public class StudentServiceImpl implements StudentService {
         return userRepository.findAll(pageable).stream()
                 .map(this::toStudentDTO)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public FileDTO fetchMinioFile(String username) {
+        HuaUser user = userRepository.findByUsername(username);
+
+        if (user == null) {
+            throw new HuaNotFound("Δεν βρέθηκε ο φοιτητής με username: " + username);
+        }
+
+        FileDTO fileDTO = new FileDTO();
+
+        String fileEncoded = null;
+
+        //fetching latest name saved on db
+        if (user.getFileName() != null) {
+            byte[] file = minioUtil.getFile(user.getUsername(), user.getFileName());
+
+            if (!ObjectUtils.isEmpty(file)) {
+                fileEncoded = Base64.getEncoder().encodeToString(file);
+            }
+
+            fileDTO.setFileName(user.getFileName());
+            fileDTO.setActualFile(fileEncoded);
+        }
+
+        return fileDTO;
     }
 
 
@@ -229,12 +256,14 @@ public class StudentServiceImpl implements StudentService {
             user.setFileName(fileName);
             user.setDateFileCreated(LocalDateTime.now());
 
+            userRepository.save(user);
+
             String actualFile = fileDTO.getActualFile();
             byte[] decodedFile = Base64.getDecoder().decode(actualFile);
             InputStream targetStream = new ByteArrayInputStream(decodedFile);
             long length = targetStream.available();
 
-            minioUtil.uploadFile(HUA_BUCKET, fileName, targetStream, length, fileDTO.getMimeType());
+            minioUtil.uploadFile(user.getUsername(), fileName, targetStream, length, fileDTO.getMimeType());
         }
     }
 }
