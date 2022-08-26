@@ -1,8 +1,11 @@
 package com.hua.api.service;
 
 import com.hua.api.dto.*;
+import com.hua.api.entity.HuaEvent;
 import com.hua.api.entity.HuaUser;
+import com.hua.api.enums.EventTypeEnum;
 import com.hua.api.exception.HuaNotFound;
+import com.hua.api.repository.HuaEventRepository;
 import com.hua.api.repository.RoleRepository;
 import com.hua.api.repository.UserRepository;
 import com.hua.api.utilities.HuaUtil;
@@ -32,16 +35,19 @@ public class StudentServiceImpl implements StudentService {
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final MinioUtil minioUtil;
+    private final HuaEventRepository huaEventRepository;
 
     @Autowired
     public StudentServiceImpl(UserRepository userRepository,
                               RoleRepository roleRepository,
                               PasswordEncoder passwordEncoder,
-                              MinioUtil minioUtil) {
+                              MinioUtil minioUtil,
+                              HuaEventRepository huaEventRepository) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
         this.minioUtil = minioUtil;
+        this.huaEventRepository = huaEventRepository;
     }
 
     @SneakyThrows
@@ -153,6 +159,19 @@ public class StudentServiceImpl implements StudentService {
     @Override
     public List<FileDTO> fetchMinioFiles(String username, LocalDate from, LocalDate to) {
         return minioUtil.getFilesByUsername(username, from, to);
+    }
+
+    @Override
+    public void updateEventPassword(Long id) {
+        HuaUser huaUser = userRepository.findById(id)
+                .orElseThrow(() -> new HuaNotFound("Δεν βρέθηκε ο φοιτητής με id: " + id));
+
+        HuaEvent huaEvent = new HuaEvent();
+        huaEvent.setHuaUser(huaUser);
+        huaEvent.setEventType(EventTypeEnum.PASSWORD);
+        huaEvent.setCreatedDate(LocalDateTime.now());
+
+        huaEventRepository.save(huaEvent);
     }
 
 

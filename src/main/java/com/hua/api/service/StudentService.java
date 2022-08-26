@@ -25,4 +25,7 @@ public interface StudentService {
     FileDTO fetchMinioFile(String username);
 
     List<FileDTO> fetchMinioFiles(String username, LocalDate from, LocalDate to) throws XmlPullParserException;
+
+    void updateEventPassword(Long id);
+
 }

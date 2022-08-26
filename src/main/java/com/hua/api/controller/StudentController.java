@@ -85,4 +85,12 @@ public class StudentController extends BaseController {
 
         return ResponseEntity.ok(response);
     }
+
+    @PutMapping("/student/event-password/{id}")
+    public ResponseEntity<FileDTO> updateEventOnPasswordChange(@PathVariable Long id) {
+
+        studentService.updateEventPassword(id);
+
+        return ResponseEntity.ok().build();
+    }
 }

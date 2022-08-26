@@ -10,10 +10,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 @Entity
 @Table(name = "HUA_USER")
@@ -105,6 +102,8 @@ public class HuaUser implements Serializable {
     )
     private Set<HuaRole> roles = new HashSet<>();
 
+    @OneToMany(mappedBy = "huaUser", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<HuaEvent> huaEvents = new ArrayList<>();
 
     public void addRole(HuaRole role) {
         roles.add(role);
@@ -301,6 +300,14 @@ public class HuaUser implements Serializable {
 
     public void setRoles(Set<HuaRole> roles) {
         this.roles = roles;
+    }
+
+    public List<HuaEvent> getHuaEvents() {
+        return huaEvents;
+    }
+
+    public void setHuaEvents(List<HuaEvent> huaEvents) {
+        this.huaEvents = huaEvents;
     }
 
     @Override
