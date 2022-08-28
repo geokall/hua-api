@@ -64,7 +64,6 @@ public class StudentServiceImpl implements StudentService {
 
         setContactInfo(studentDTO, user);
 
-
         roleRepository.findByName(READER_ROLE)
                 .ifPresent(user::addRole);
 
