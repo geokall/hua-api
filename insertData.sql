@@ -23,6 +23,9 @@ VALUES ('Θησέως 70', '1995-01-01', 'Καλλιθέα', null, '1995-01-01 0
 
 INSERT INTO hua.user_role VALUES (1, 1);
 
-create table hua.hua_event (id  bigserial not null, created_date timestamp not null, event_type varchar(255), user_id int8, primary key (id))
+create table hua.hua_event (id  bigserial not null, created_date timestamp not null, event_type varchar(255), user_id int8, primary key (id));
 
-alter table hua.hua_event add constraint FK1vnyj16kn1oq80w11hd1d5ars foreign key (user_id) references hua.hua_user
+alter table hua.hua_event add constraint FK1vnyj16kn1oq80w11hd1d5ars foreign key (user_id) references hua.hua_user;
+
+alter table hua.hua_event
+    add is_admin_informed boolean;

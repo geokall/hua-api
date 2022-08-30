@@ -2,6 +2,7 @@ package com.hua.api.service;
 
 import com.hua.api.dto.*;
 import com.hua.api.entity.HuaEvent;
+import com.hua.api.entity.HuaRole;
 import com.hua.api.entity.HuaUser;
 import com.hua.api.enums.EventTypeEnum;
 import com.hua.api.exception.HuaNotFound;
@@ -11,6 +12,8 @@ import com.hua.api.repository.UserRepository;
 import com.hua.api.utilities.HuaUtil;
 import com.hua.api.utilities.MinioUtil;
 import lombok.SneakyThrows;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -27,6 +30,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class StudentServiceImpl implements StudentService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(StudentServiceImpl.class);
 
     private static final String TEMP = "temp";
     private static final String READER_ROLE = "READER";
@@ -74,6 +79,14 @@ public class StudentServiceImpl implements StudentService {
                     HuaUser updatedUser = generateUsernameAndEmail(huaUser);
                     userRepository.save(updatedUser);
                 });
+
+        HuaEvent huaEvent = new HuaEvent();
+        huaEvent.setHuaUser(savedUser);
+        huaEvent.setEventType(EventTypeEnum.REGISTRATION);
+        huaEvent.setAdminInformed(false);
+        huaEvent.setCreatedDate(savedUser.getDateCreated());
+
+        huaEventRepository.save(huaEvent);
 
         FileDTO fileDTO = studentDTO.getFile();
 
@@ -168,9 +181,34 @@ public class StudentServiceImpl implements StudentService {
         HuaEvent huaEvent = new HuaEvent();
         huaEvent.setHuaUser(huaUser);
         huaEvent.setEventType(EventTypeEnum.PASSWORD);
+        huaEvent.setAdminInformed(false);
         huaEvent.setCreatedDate(LocalDateTime.now());
 
         huaEventRepository.save(huaEvent);
+    }
+
+    @Override
+    public void notifyAdmins() {
+        List<HuaUser> admins = userRepository.findByRoles_Id(1L);
+
+        List<String> listOfAdminEmails = admins.stream()
+                .map(HuaUser::getEmail)
+                .collect(Collectors.toList());
+
+        LOGGER.info("Fetched admin emails: " + listOfAdminEmails.size());
+
+        List<HuaEvent> usersToBeInformed = huaEventRepository.findAllByAdminInformedAndEventType(false, EventTypeEnum.REGISTRATION);
+
+        List<String> usernamesToBeInformed = usersToBeInformed.stream()
+                .map(x -> x.getHuaUser().getUsername())
+                .collect(Collectors.toList());
+
+        LOGGER.info("Fetched usernames to be informed: " + usernamesToBeInformed.size());
+
+        usersToBeInformed.forEach(huaEvent -> {
+            huaEvent.setAdminInformed(true);
+            huaEventRepository.save(huaEvent);
+        });
     }
 
 

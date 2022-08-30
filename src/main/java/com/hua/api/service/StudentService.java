@@ -28,4 +28,6 @@ public interface StudentService {
 
     void updateEventPassword(Long id);
 
+    void notifyAdmins();
+
 }

@@ -9,8 +9,6 @@ import org.springframework.data.annotation.CreatedDate;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -26,6 +24,9 @@ public class HuaEvent implements Serializable {
     @Type(type = "pgsql_enum")
     @Column(name = "event_type")
     private EventTypeEnum eventType;
+
+    @Column(name = "is_admin_informed")
+    private boolean adminInformed;
 
     @CreatedDate
     @Column(name = "created_date", nullable = false)
@@ -52,6 +53,14 @@ public class HuaEvent implements Serializable {
 
     public void setEventType(EventTypeEnum eventType) {
         this.eventType = eventType;
+    }
+
+    public boolean isAdminInformed() {
+        return adminInformed;
+    }
+
+    public void setAdminInformed(boolean adminInformed) {
+        this.adminInformed = adminInformed;
     }
 
     public LocalDateTime getCreatedDate() {

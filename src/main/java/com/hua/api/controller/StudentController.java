@@ -93,4 +93,12 @@ public class StudentController extends BaseController {
 
         return ResponseEntity.ok().build();
     }
+
+    @PutMapping("/student/notify-admins")
+    public ResponseEntity<FileDTO> notifyAdmins() {
+
+        studentService.notifyAdmins();
+
+        return ResponseEntity.ok().build();
+    }
 }
