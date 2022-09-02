@@ -188,7 +188,9 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
-    public void notifyAdmins() {
+    public List<NotificationDTO> notifyAdmins() {
+        List<NotificationDTO> dto = new ArrayList<>();
+
         List<HuaUser> admins = userRepository.findByRoles_Id(1L);
 
         List<String> listOfAdminEmails = admins.stream()
@@ -205,10 +207,19 @@ public class StudentServiceImpl implements StudentService {
 
         LOGGER.info("Fetched usernames to be informed: " + usernamesToBeInformed.size());
 
+        NotificationDTO notificationDTO = new NotificationDTO();
+
+        notificationDTO.setAdmins(listOfAdminEmails);
+        notificationDTO.setUsernames(usernamesToBeInformed);
+
+        dto.add(notificationDTO);
+
         usersToBeInformed.forEach(huaEvent -> {
             huaEvent.setAdminInformed(true);
             huaEventRepository.save(huaEvent);
         });
+
+        return dto;
     }
 
 

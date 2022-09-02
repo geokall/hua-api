@@ -1,6 +1,7 @@
 package com.hua.api.service;
 
 import com.hua.api.dto.FileDTO;
+import com.hua.api.dto.NotificationDTO;
 import com.hua.api.dto.PasswordDTO;
 import com.hua.api.dto.StudentDTO;
 import org.springframework.data.domain.Pageable;
@@ -28,6 +29,6 @@ public interface StudentService {
 
     void updateEventPassword(Long id);
 
-    void notifyAdmins();
+    List<NotificationDTO> notifyAdmins();
 
 }

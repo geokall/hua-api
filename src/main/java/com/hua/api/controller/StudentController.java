@@ -1,6 +1,7 @@
 package com.hua.api.controller;
 
 import com.hua.api.dto.FileDTO;
+import com.hua.api.dto.NotificationDTO;
 import com.hua.api.dto.PasswordDTO;
 import com.hua.api.dto.StudentDTO;
 import com.hua.api.service.StudentService;
@@ -13,7 +14,6 @@ import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.IOException;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -95,10 +95,10 @@ public class StudentController extends BaseController {
     }
 
     @PutMapping("/student/notify-admins")
-    public ResponseEntity<FileDTO> notifyAdmins() {
+    public ResponseEntity<List<NotificationDTO>> notifyAdmins() {
 
-        studentService.notifyAdmins();
+        List<NotificationDTO> response = studentService.notifyAdmins();
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok().body(response);
     }
 }
