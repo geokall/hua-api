@@ -1,5 +1,6 @@
 package com.hua.api.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hua.api.dto.*;
 import com.hua.api.entity.HuaEvent;
 import com.hua.api.entity.HuaUser;
@@ -39,19 +40,19 @@ public class StudentServiceImpl implements StudentService {
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final MinioUtil minioUtil;
-    private final HuaEventRepository huaEventRepository;
+    private final EventService eventService;
 
     @Autowired
     public StudentServiceImpl(UserRepository userRepository,
                               RoleRepository roleRepository,
                               PasswordEncoder passwordEncoder,
                               MinioUtil minioUtil,
-                              HuaEventRepository huaEventRepository) {
+                              EventService eventService) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
         this.minioUtil = minioUtil;
-        this.huaEventRepository = huaEventRepository;
+        this.eventService = eventService;
     }
 
     @SneakyThrows
@@ -79,13 +80,7 @@ public class StudentServiceImpl implements StudentService {
                     userRepository.save(updatedUser);
                 });
 
-        HuaEvent huaEvent = new HuaEvent();
-        huaEvent.setHuaUser(savedUser);
-        huaEvent.setEventType(EventTypeEnum.REGISTRATION);
-        huaEvent.setAdminInformed(false);
-        huaEvent.setCreatedDate(savedUser.getDateCreated());
-
-        huaEventRepository.save(huaEvent);
+        eventService.create(EventTypeEnum.REGISTRATION, savedUser);
 
         FileDTO fileDTO = studentDTO.getFile();
 
@@ -99,7 +94,7 @@ public class StudentServiceImpl implements StudentService {
         HuaUser huaUser = userRepository.findById(id)
                 .orElseThrow(() -> new HuaNotFound("Δεν βρέθηκε ο φοιτητής με id: " + id));
 
-        return toStudentDTO(huaUser);
+        return new StudentDTO(huaUser);
     }
 
     @Override
@@ -130,13 +125,18 @@ public class StudentServiceImpl implements StudentService {
                 .orElseThrow(() -> new HuaNotFound("Δεν βρέθηκε ο φοιτητής με id: " + id));
 
         huaUser.setPassword(passwordEncoder.encode(passwordDTO.getPassword()));
-        userRepository.save(huaUser);
+        huaUser = userRepository.save(huaUser);
+        try {
+            eventService.create(EventTypeEnum.PASSWORD, huaUser);
+        } catch (JsonProcessingException e) {
+            LOGGER.warn("Caught exception while creating event for password update", e);
+        }
     }
 
     @Override
     public List<StudentDTO> findAllStudents(Pageable pageable) {
         return userRepository.findAll(pageable).stream()
-                .map(this::toStudentDTO)
+                .map(StudentDTO::new)
                 .collect(Collectors.toList());
     }
 
@@ -177,13 +177,12 @@ public class StudentServiceImpl implements StudentService {
         HuaUser huaUser = userRepository.findById(id)
                 .orElseThrow(() -> new HuaNotFound("Δεν βρέθηκε ο φοιτητής με id: " + id));
 
-        HuaEvent huaEvent = new HuaEvent();
-        huaEvent.setHuaUser(huaUser);
-        huaEvent.setEventType(EventTypeEnum.PASSWORD);
-        huaEvent.setAdminInformed(false);
-        huaEvent.setCreatedDate(LocalDateTime.now());
+        try {
+            eventService.create(EventTypeEnum.PASSWORD, huaUser);
+        } catch (JsonProcessingException e) {
+            LOGGER.warn("Caught exception while creating event for password update", e);
+        }
 
-        huaEventRepository.save(huaEvent);
     }
 
     @Override
@@ -198,10 +197,11 @@ public class StudentServiceImpl implements StudentService {
 
         LOGGER.info("Fetched admin emails: " + listOfAdminEmails.size());
 
-        List<HuaEvent> usersToBeInformed = huaEventRepository.findAllByAdminInformedAndEventType(false, EventTypeEnum.REGISTRATION);
+        List<EventDTO> events = eventService.get(false, EventTypeEnum.REGISTRATION);
 
-        List<String> usernamesToBeInformed = usersToBeInformed.stream()
-                .map(x -> x.getHuaUser().getUsername())
+        List<String> usernamesToBeInformed = events
+                .stream()
+                .map(event -> event.getStudent().getUsername())
                 .collect(Collectors.toList());
 
         LOGGER.info("Fetched usernames to be informed: " + usernamesToBeInformed.size());
@@ -213,9 +213,9 @@ public class StudentServiceImpl implements StudentService {
 
         dto.add(notificationDTO);
 
-        usersToBeInformed.forEach(huaEvent -> {
-            huaEvent.setAdminInformed(true);
-            huaEventRepository.save(huaEvent);
+        events.forEach(event -> {
+            event.setAdminInformed(true);
+            eventService.update(event);
         });
 
         return dto;
@@ -225,19 +225,13 @@ public class StudentServiceImpl implements StudentService {
     public List<EventDTO> events(String event, LocalDate from, LocalDate to) {
         if (!ObjectUtils.isEmpty(event)) {
             if (event.equalsIgnoreCase("REGISTRATION")) {
-                return huaEventRepository.findAllByEventTypeAndCreatedDateBetween(EventTypeEnum.REGISTRATION, from.atStartOfDay(), to.atStartOfDay()).stream()
-                        .map(this::toEventDTO)
-                        .collect(Collectors.toList());
+                return eventService.findAll(from, to, EventTypeEnum.REGISTRATION);
             }
             if (event.equalsIgnoreCase("PASSWORD")) {
-                return huaEventRepository.findAllByEventTypeAndCreatedDateBetween(EventTypeEnum.PASSWORD, from.atStartOfDay(), to.atStartOfDay()).stream()
-                        .map(this::toEventDTO)
-                        .collect(Collectors.toList());
+                return eventService.findAll(from, to, EventTypeEnum.PASSWORD);
             }
         } else {
-            return huaEventRepository.findAllByCreatedDateBetween(from.atStartOfDay(), to.atStartOfDay()).stream()
-                    .map(this::toEventDTO)
-                    .collect(Collectors.toList());
+            return eventService.findAll(from, to);
         }
 
         return new ArrayList<>();
@@ -310,39 +304,6 @@ public class StudentServiceImpl implements StudentService {
         }
     }
 
-    private StudentDTO toStudentDTO(HuaUser user) {
-        StudentDTO dto = new StudentDTO();
-        dto.setId(user.getId());
-        dto.setDateChanged(user.getDateChanged());
-        dto.setDateCreated(user.getDateCreated());
-        dto.setAddress(user.getAddress());
-        dto.setCity(user.getCity());
-        dto.setDepartment(user.getDepartment());
-        dto.setEmail(user.getEmail());
-        dto.setUsername(user.getUsername());
-        dto.setIsVerified(user.getVerified() != null ? user.getVerified() : false);
-
-        StudentDirectionDTO direction = new StudentDirectionDTO();
-        direction.setName(user.getDirection());
-        dto.setDirection(direction);
-
-        if (user.getBirthDate() != null) {
-            String birthDateFormatted = HuaUtil.formatDateToString(user.getBirthDate());
-            dto.setBirthDate(birthDateFormatted);
-        }
-
-        dto.setGender(user.getGender());
-        dto.setFatherName(user.getFatherName());
-        dto.setMobileNumber(user.getMobileNumber());
-        dto.setMotherName(user.getMotherName());
-        dto.setName(user.getName());
-        dto.setSurname(user.getSurname());
-        dto.setPostalCode(user.getPostalCode());
-        dto.setVatNumber(user.getVatNumber());
-
-        return dto;
-    }
-
     private void saveFileOnDbAndMinio(HuaUser user, FileDTO fileDTO) throws IOException {
         String fileName = fileDTO.getFileName();
 
@@ -359,16 +320,5 @@ public class StudentServiceImpl implements StudentService {
 
             minioUtil.uploadFile(user.getUsername(), fileName, targetStream, length, fileDTO.getMimeType());
         }
-    }
-
-    private EventDTO toEventDTO(HuaEvent huaEvent) {
-        EventDTO dto = new EventDTO();
-        dto.setAdminInformed(huaEvent.isAdminInformed());
-        dto.setEventType(huaEvent.getEventType());
-        dto.setCreatedDate(huaEvent.getCreatedDate());
-        huaEvent.setDetails(huaEvent.getDetails());
-        dto.setStudent(toStudentDTO(huaEvent.getHuaUser()));
-
-        return dto;
     }
 }

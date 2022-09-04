@@ -7,13 +7,14 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface HuaEventRepository extends JpaRepository<HuaEvent, Long> {
 
-    List<HuaEvent> findAllByAdminInformedAndEventType(boolean isInformed, EventTypeEnum eventType);
+    List<HuaEvent> findAllByAdminInformedAndEventTypeOrderByCreatedDateDesc(boolean isInformed, EventTypeEnum eventType);
 
-    List<HuaEvent> findAllByEventTypeAndCreatedDateBetween(EventTypeEnum eventType, LocalDateTime from, LocalDateTime to);
+    List<HuaEvent> findAllByEventTypeAndCreatedDateBetweenOrderByCreatedDateDesc(EventTypeEnum eventType, LocalDateTime from, LocalDateTime to);
 
-    List<HuaEvent> findAllByCreatedDateBetween(LocalDateTime from, LocalDateTime to);
+    List<HuaEvent> findAllByCreatedDateBetweenOrderByCreatedDateDesc(LocalDateTime from, LocalDateTime to);
 }
