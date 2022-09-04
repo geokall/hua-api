@@ -2,11 +2,9 @@ package com.hua.api.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hua.api.dto.*;
-import com.hua.api.entity.HuaEvent;
 import com.hua.api.entity.HuaUser;
 import com.hua.api.enums.EventTypeEnum;
 import com.hua.api.exception.HuaNotFound;
-import com.hua.api.repository.HuaEventRepository;
 import com.hua.api.repository.RoleRepository;
 import com.hua.api.repository.UserRepository;
 import com.hua.api.utilities.HuaUtil;
@@ -25,7 +23,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.Date;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -219,22 +220,6 @@ public class StudentServiceImpl implements StudentService {
         });
 
         return dto;
-    }
-
-    @Override
-    public List<EventDTO> events(String event, LocalDate from, LocalDate to) {
-        if (!ObjectUtils.isEmpty(event)) {
-            if (event.equalsIgnoreCase("REGISTRATION")) {
-                return eventService.findAll(from, to, EventTypeEnum.REGISTRATION);
-            }
-            if (event.equalsIgnoreCase("PASSWORD")) {
-                return eventService.findAll(from, to, EventTypeEnum.PASSWORD);
-            }
-        } else {
-            return eventService.findAll(from, to);
-        }
-
-        return new ArrayList<>();
     }
 
 

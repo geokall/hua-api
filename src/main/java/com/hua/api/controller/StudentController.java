@@ -1,11 +1,14 @@
 package com.hua.api.controller;
 
 import com.hua.api.dto.*;
+import com.hua.api.enums.EventTypeEnum;
+import com.hua.api.service.EventService;
 import com.hua.api.service.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.xmlpull.v1.XmlPullParserException;
 
@@ -17,10 +20,12 @@ import java.util.List;
 public class StudentController extends BaseController {
 
     private final StudentService studentService;
+    private final EventService eventService;
 
     @Autowired
-    public StudentController(StudentService studentService) {
+    public StudentController(StudentService studentService, EventService eventService) {
         this.studentService = studentService;
+        this.eventService = eventService;
     }
 
     @PostMapping("/student/create")
@@ -100,11 +105,17 @@ public class StudentController extends BaseController {
     }
 
     @GetMapping("/students/events")
-    public ResponseEntity<List<EventDTO>> test(@RequestParam(required = false) String event,
-                                               @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
-                                               @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
-        List<EventDTO> response = studentService.events(event, from, to);
+    public ResponseEntity<List<EventDTO>> getEvents(@RequestParam(required = false) String event,
+                                                    @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+                                                    @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+        List<EventDTO> events;
+        if (StringUtils.hasText(event)) {
+            EventTypeEnum eventType = EventTypeEnum.valueOf(event.toUpperCase());
+            events = eventService.findAll(from, to, eventType);
+        } else {
+            events = eventService.findAll(from, to);
+        }
 
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(events);
     }
 }
