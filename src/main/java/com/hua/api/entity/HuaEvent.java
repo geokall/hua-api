@@ -28,6 +28,9 @@ public class HuaEvent implements Serializable {
     @Column(name = "is_admin_informed")
     private boolean adminInformed;
 
+    @Column(name = "details")
+    private String details;
+
     @CreatedDate
     @Column(name = "created_date", nullable = false)
     private LocalDateTime createdDate;
@@ -61,6 +64,14 @@ public class HuaEvent implements Serializable {
 
     public void setAdminInformed(boolean adminInformed) {
         this.adminInformed = adminInformed;
+    }
+
+    public String getDetails() {
+        return details;
+    }
+
+    public void setDetails(String details) {
+        this.details = details;
     }
 
     public LocalDateTime getCreatedDate() {

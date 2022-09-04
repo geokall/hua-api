@@ -1,9 +1,6 @@
 package com.hua.api.service;
 
-import com.hua.api.dto.FileDTO;
-import com.hua.api.dto.NotificationDTO;
-import com.hua.api.dto.PasswordDTO;
-import com.hua.api.dto.StudentDTO;
+import com.hua.api.dto.*;
 import org.springframework.data.domain.Pageable;
 import org.xmlpull.v1.XmlPullParserException;
 
@@ -30,5 +27,7 @@ public interface StudentService {
     void updateEventPassword(Long id);
 
     List<NotificationDTO> notifyAdmins();
+
+    List<EventDTO> events(String event, LocalDate from, LocalDate to);
 
 }

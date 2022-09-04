@@ -1,9 +1,6 @@
 package com.hua.api.controller;
 
-import com.hua.api.dto.FileDTO;
-import com.hua.api.dto.NotificationDTO;
-import com.hua.api.dto.PasswordDTO;
-import com.hua.api.dto.StudentDTO;
+import com.hua.api.dto.*;
 import com.hua.api.service.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
@@ -100,5 +97,14 @@ public class StudentController extends BaseController {
         List<NotificationDTO> response = studentService.notifyAdmins();
 
         return ResponseEntity.ok().body(response);
+    }
+
+    @GetMapping("/students/events")
+    public ResponseEntity<List<EventDTO>> test(@RequestParam(required = false) String event,
+                                               @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+                                               @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+        List<EventDTO> response = studentService.events(event, from, to);
+
+        return ResponseEntity.ok(response);
     }
 }

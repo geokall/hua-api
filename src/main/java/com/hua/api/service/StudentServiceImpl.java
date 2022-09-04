@@ -2,7 +2,6 @@ package com.hua.api.service;
 
 import com.hua.api.dto.*;
 import com.hua.api.entity.HuaEvent;
-import com.hua.api.entity.HuaRole;
 import com.hua.api.entity.HuaUser;
 import com.hua.api.enums.EventTypeEnum;
 import com.hua.api.exception.HuaNotFound;
@@ -222,6 +221,28 @@ public class StudentServiceImpl implements StudentService {
         return dto;
     }
 
+    @Override
+    public List<EventDTO> events(String event, LocalDate from, LocalDate to) {
+        if (!ObjectUtils.isEmpty(event)) {
+            if (event.equalsIgnoreCase("REGISTRATION")) {
+                return huaEventRepository.findAllByEventTypeAndCreatedDateBetween(EventTypeEnum.REGISTRATION, from.atStartOfDay(), to.atStartOfDay()).stream()
+                        .map(this::toEventDTO)
+                        .collect(Collectors.toList());
+            }
+            if (event.equalsIgnoreCase("PASSWORD")) {
+                return huaEventRepository.findAllByEventTypeAndCreatedDateBetween(EventTypeEnum.PASSWORD, from.atStartOfDay(), to.atStartOfDay()).stream()
+                        .map(this::toEventDTO)
+                        .collect(Collectors.toList());
+            }
+        } else {
+            return huaEventRepository.findAllByCreatedDateBetween(from.atStartOfDay(), to.atStartOfDay()).stream()
+                    .map(this::toEventDTO)
+                    .collect(Collectors.toList());
+        }
+
+        return new ArrayList<>();
+    }
+
 
     private void handleMobileAndAfmUniqueness(String mobileNumber, String vatNumber) {
         if (!ObjectUtils.isEmpty(mobileNumber)) {
@@ -338,5 +359,16 @@ public class StudentServiceImpl implements StudentService {
 
             minioUtil.uploadFile(user.getUsername(), fileName, targetStream, length, fileDTO.getMimeType());
         }
+    }
+
+    private EventDTO toEventDTO(HuaEvent huaEvent) {
+        EventDTO dto = new EventDTO();
+        dto.setAdminInformed(huaEvent.isAdminInformed());
+        dto.setEventType(huaEvent.getEventType());
+        dto.setCreatedDate(huaEvent.getCreatedDate());
+        huaEvent.setDetails(huaEvent.getDetails());
+        dto.setStudent(toStudentDTO(huaEvent.getHuaUser()));
+
+        return dto;
     }
 }
