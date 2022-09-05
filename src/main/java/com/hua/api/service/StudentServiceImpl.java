@@ -115,6 +115,7 @@ public class StudentServiceImpl implements StudentService {
         huaUser.setDateChanged(LocalDateTime.now());
         huaUser.setSurname(studentDTO.getSurname());
         huaUser.setName(studentDTO.getName());
+        huaUser.setPersonalEmail(studentDTO.getPersonalEmail());
         huaUser.setFatherName(studentDTO.getFatherName());
         huaUser.setMotherName(studentDTO.getMotherName());
         huaUser.setAddress(studentDTO.getAddress());
@@ -267,6 +268,7 @@ public class StudentServiceImpl implements StudentService {
         user.setVerified(false);
         user.setPassword(passwordEncoder.encode(TEMP));
         user.setEmail(TEMP);
+        user.setPersonalEmail(studentDTO.getPersonalEmail());
         user.setUsername(TEMP);
 
         user.setSurname(studentDTO.getSurname());
@@ -325,6 +327,7 @@ public class StudentServiceImpl implements StudentService {
         rabbitMqDTO.setEventId(eventDTO.getId());
         rabbitMqDTO.setEventType(eventDTO.getEventType());
         rabbitMqDTO.setEmail(savedUser.getEmail());
+        rabbitMqDTO.setPersonalEmail(savedUser.getPersonalEmail());
         rabbitMqDTO.setCreatedDate(eventDTO.getCreatedDate());
         rabbitMqDTO.setUserId(savedUser.getId());
 

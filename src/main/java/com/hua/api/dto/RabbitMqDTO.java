@@ -14,7 +14,11 @@ public class RabbitMqDTO {
 
     private String email;
 
+    private String personalEmail;
+
     private LocalDateTime createdDate;
 
     private Long userId;
+
+
 }

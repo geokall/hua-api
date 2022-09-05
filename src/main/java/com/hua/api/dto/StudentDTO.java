@@ -20,6 +20,8 @@ public class StudentDTO {
 
     private String email;
 
+    private String personalEmail;
+
     private LocalDateTime dateCreated;
 
     private LocalDateTime dateChanged;
@@ -64,6 +66,7 @@ public class StudentDTO {
         this.city = user.getCity();
         this.department = user.getDepartment();
         this.email = user.getEmail();
+        this.personalEmail = user.getPersonalEmail();
         this.username = user.getUsername();
         this.isVerified = user.getVerified() != null ? user.getVerified() : false;
 

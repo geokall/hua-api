@@ -32,6 +32,10 @@ public class HuaUser implements Serializable {
     //generated from system with @hua.gr
     private String email;
 
+    //for testing reasons
+    @Column(name = "personal_email")
+    private String personalEmail;
+
     @Column(name = "surname")
     private String surname;
 
@@ -148,6 +152,14 @@ public class HuaUser implements Serializable {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getPersonalEmail() {
+        return personalEmail;
+    }
+
+    public void setPersonalEmail(String personalEmail) {
+        this.personalEmail = personalEmail;
     }
 
     public String getSurname() {
