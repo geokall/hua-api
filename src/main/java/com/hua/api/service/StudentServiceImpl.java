@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 @Service
@@ -42,18 +43,21 @@ public class StudentServiceImpl implements StudentService {
     private final PasswordEncoder passwordEncoder;
     private final MinioUtil minioUtil;
     private final EventService eventService;
+    private final RabbitMqService rabbitMqService;
 
     @Autowired
     public StudentServiceImpl(UserRepository userRepository,
                               RoleRepository roleRepository,
                               PasswordEncoder passwordEncoder,
                               MinioUtil minioUtil,
-                              EventService eventService) {
+                              EventService eventService,
+                              RabbitMqService rabbitMqService) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
         this.minioUtil = minioUtil;
         this.eventService = eventService;
+        this.rabbitMqService = rabbitMqService;
     }
 
     @SneakyThrows
@@ -81,11 +85,15 @@ public class StudentServiceImpl implements StudentService {
                     userRepository.save(updatedUser);
                 });
 
-        eventService.create(EventTypeEnum.REGISTRATION, savedUser);
+        EventDTO eventDTO = eventService.create(EventTypeEnum.REGISTRATION, savedUser);
 
         FileDTO fileDTO = studentDTO.getFile();
 
         saveFileOnDbAndMinio(savedUser, fileDTO);
+
+        RabbitMqDTO rabbitMqDTO = toRabbitMqDTO(savedUser, eventDTO);
+
+        rabbitMqService.queueRegistrationStudent(rabbitMqDTO);
 
         return savedUser.getId();
     }
@@ -128,9 +136,14 @@ public class StudentServiceImpl implements StudentService {
         huaUser.setPassword(passwordEncoder.encode(passwordDTO.getPassword()));
         huaUser = userRepository.save(huaUser);
         try {
-            eventService.create(EventTypeEnum.PASSWORD, huaUser);
+            EventDTO eventDTO = eventService.create(EventTypeEnum.PASSWORD, huaUser);
+
+            RabbitMqDTO rabbitMqDTO = toRabbitMqDTO(huaUser, eventDTO);
+            rabbitMqService.queueChangePassword(rabbitMqDTO);
         } catch (JsonProcessingException e) {
             LOGGER.warn("Caught exception while creating event for password update", e);
+        } catch (IOException | TimeoutException e) {
+            LOGGER.info(e.getMessage());
         }
     }
 
@@ -296,8 +309,6 @@ public class StudentServiceImpl implements StudentService {
             user.setFileName(fileName);
             user.setDateFileCreated(LocalDateTime.now());
 
-            userRepository.save(user);
-
             String actualFile = fileDTO.getActualFile();
             byte[] decodedFile = Base64.getDecoder().decode(actualFile);
             InputStream targetStream = new ByteArrayInputStream(decodedFile);
@@ -305,5 +316,18 @@ public class StudentServiceImpl implements StudentService {
 
             minioUtil.uploadFile(user.getUsername(), fileName, targetStream, length, fileDTO.getMimeType());
         }
+
+        userRepository.save(user);
+    }
+
+    private RabbitMqDTO toRabbitMqDTO(HuaUser savedUser, EventDTO eventDTO) {
+        RabbitMqDTO rabbitMqDTO = new RabbitMqDTO();
+        rabbitMqDTO.setEventId(eventDTO.getId());
+        rabbitMqDTO.setEventType(eventDTO.getEventType());
+        rabbitMqDTO.setEmail(savedUser.getEmail());
+        rabbitMqDTO.setCreatedDate(eventDTO.getCreatedDate());
+        rabbitMqDTO.setUserId(savedUser.getId());
+
+        return rabbitMqDTO;
     }
 }

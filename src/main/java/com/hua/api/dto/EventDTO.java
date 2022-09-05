@@ -21,6 +21,8 @@ public class EventDTO {
 
     private String details;
 
+    private String email;
+
     private LocalDateTime createdDate;
 
     private StudentDTO student;
