@@ -1,5 +1,6 @@
 package com.hua.api.service;
 
+import com.hua.api.dto.FileDTO;
 import com.hua.api.dto.StudentDTO;
 import com.hua.api.dto.StudentDirectionDTO;
 import com.hua.api.enums.GenderEnum;
@@ -39,6 +40,7 @@ public class StudentServiceImplTest {
         request.setSurname("surname");
         request.setVatNumber("vat number");
         request.setUsername("username");
+        request.setFile(new FileDTO());
 
         studentService.createStudent(request);
 

@@ -1,11 +1,17 @@
 package com.hua.api.dto;
 
+import com.hua.api.entity.HuaUser;
 import com.hua.api.enums.GenderEnum;
+import com.hua.api.utilities.HuaUtil;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class StudentDTO {
 
     private Long id;
@@ -13,6 +19,8 @@ public class StudentDTO {
     private String username;
 
     private String email;
+
+    private String personalEmail;
 
     private LocalDateTime dateCreated;
 
@@ -47,4 +55,37 @@ public class StudentDTO {
     private String mobileNumber;
 
     private String vatNumber;
+
+    private FileDTO file;
+
+    public StudentDTO(HuaUser user) {
+        this.id = user.getId();
+        this.dateChanged = user.getDateChanged();
+        this.dateCreated = user.getDateCreated();
+        this.address = user.getAddress();
+        this.city = user.getCity();
+        this.department = user.getDepartment();
+        this.email = user.getEmail();
+        this.personalEmail = user.getPersonalEmail();
+        this.username = user.getUsername();
+        this.isVerified = user.getVerified() != null ? user.getVerified() : false;
+
+        StudentDirectionDTO direction = new StudentDirectionDTO();
+        direction.setName(user.getDirection());
+        this.direction = direction;
+
+        if (user.getBirthDate() != null) {
+            String birthDateFormatted = HuaUtil.formatDateToString(user.getBirthDate());
+            this.birthDate = birthDateFormatted;
+        }
+
+        this.gender = user.getGender();
+        this.fatherName  = user.getFatherName();
+        this.mobileNumber = user.getMobileNumber();
+        this.motherName = user.getMotherName();
+        this.name = user.getName();
+        this.surname = user.getSurname();
+        this.postalCode = user.getPostalCode();
+        this.vatNumber = user.getVatNumber();
+    }
 }

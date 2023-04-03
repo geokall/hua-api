@@ -1,23 +1,40 @@
 package com.hua.api.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hua.api.dto.*;
 import com.hua.api.entity.HuaUser;
+import com.hua.api.enums.EventTypeEnum;
 import com.hua.api.exception.HuaNotFound;
 import com.hua.api.repository.RoleRepository;
 import com.hua.api.repository.UserRepository;
 import com.hua.api.utilities.HuaUtil;
+import com.hua.api.utilities.MinioUtil;
+import lombok.SneakyThrows;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 @Service
 public class StudentServiceImpl implements StudentService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(StudentServiceImpl.class);
 
     private static final String TEMP = "temp";
     private static final String READER_ROLE = "READER";
@@ -25,16 +42,26 @@ public class StudentServiceImpl implements StudentService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final MinioUtil minioUtil;
+    private final EventService eventService;
+    private final RabbitMqService rabbitMqService;
 
     @Autowired
     public StudentServiceImpl(UserRepository userRepository,
                               RoleRepository roleRepository,
-                              PasswordEncoder passwordEncoder) {
+                              PasswordEncoder passwordEncoder,
+                              MinioUtil minioUtil,
+                              EventService eventService,
+                              RabbitMqService rabbitMqService) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
+        this.minioUtil = minioUtil;
+        this.eventService = eventService;
+        this.rabbitMqService = rabbitMqService;
     }
 
+    @SneakyThrows
     @Override
     public Long createStudent(StudentDTO studentDTO) {
 
@@ -59,6 +86,16 @@ public class StudentServiceImpl implements StudentService {
                     userRepository.save(updatedUser);
                 });
 
+        EventDTO eventDTO = eventService.create(EventTypeEnum.REGISTRATION, savedUser);
+
+        FileDTO fileDTO = studentDTO.getFile();
+
+        saveFileOnDbAndMinio(savedUser, fileDTO);
+
+        RabbitMqDTO rabbitMqDTO = toRabbitMqDTO(savedUser, eventDTO);
+
+        rabbitMqService.queueRegistrationStudent(rabbitMqDTO);
+
         return savedUser.getId();
     }
 
@@ -67,11 +104,11 @@ public class StudentServiceImpl implements StudentService {
         HuaUser huaUser = userRepository.findById(id)
                 .orElseThrow(() -> new HuaNotFound("Δεν βρέθηκε ο φοιτητής με id: " + id));
 
-        return toStudentDTO(huaUser);
+        return new StudentDTO(huaUser);
     }
 
     @Override
-    public void updateStudent(Long id, StudentDTO studentDTO) {
+    public void updateStudent(Long id, StudentDTO studentDTO) throws IOException {
         HuaUser huaUser = userRepository.findById(id)
                 .orElseThrow(() -> new HuaNotFound("Δεν βρέθηκε ο φοιτητής με id: " + id));
 
@@ -79,6 +116,7 @@ public class StudentServiceImpl implements StudentService {
         huaUser.setDateChanged(LocalDateTime.now());
         huaUser.setSurname(studentDTO.getSurname());
         huaUser.setName(studentDTO.getName());
+        huaUser.setPersonalEmail(studentDTO.getPersonalEmail());
         huaUser.setFatherName(studentDTO.getFatherName());
         huaUser.setMotherName(studentDTO.getMotherName());
         huaUser.setAddress(studentDTO.getAddress());
@@ -87,7 +125,9 @@ public class StudentServiceImpl implements StudentService {
         huaUser.setMobileNumber(studentDTO.getMobileNumber());
         huaUser.setVatNumber(studentDTO.getVatNumber());
 
-        userRepository.save(huaUser);
+        FileDTO fileDTO = studentDTO.getFile();
+
+        saveFileOnDbAndMinio(huaUser, fileDTO);
     }
 
     @Override
@@ -96,14 +136,106 @@ public class StudentServiceImpl implements StudentService {
                 .orElseThrow(() -> new HuaNotFound("Δεν βρέθηκε ο φοιτητής με id: " + id));
 
         huaUser.setPassword(passwordEncoder.encode(passwordDTO.getPassword()));
-        userRepository.save(huaUser);
+        huaUser = userRepository.save(huaUser);
+        try {
+            EventDTO eventDTO = eventService.create(EventTypeEnum.PASSWORD, huaUser);
+
+            RabbitMqDTO rabbitMqDTO = toRabbitMqDTO(huaUser, eventDTO);
+            rabbitMqService.queueChangePassword(rabbitMqDTO);
+        } catch (JsonProcessingException e) {
+            LOGGER.warn("Caught exception while creating event for password update", e);
+        } catch (IOException | TimeoutException e) {
+            LOGGER.info(e.getMessage());
+        }
     }
 
     @Override
     public List<StudentDTO> findAllStudents(Pageable pageable) {
-        return userRepository.findAll(pageable).stream()
-                .map(this::toStudentDTO)
+        PageRequest of = PageRequest.of(0, 200);
+        return userRepository.findAll(of).stream()
+                .map(StudentDTO::new)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public FileDTO fetchMinioFile(String username) {
+        HuaUser user = userRepository.findByUsername(username);
+
+        if (user == null) {
+            throw new HuaNotFound("Δεν βρέθηκε ο φοιτητής με username: " + username);
+        }
+
+        FileDTO fileDTO = new FileDTO();
+
+        String fileEncoded = null;
+
+        //fetching latest name saved on db
+        if (user.getFileName() != null) {
+            byte[] file = minioUtil.getFile(user.getUsername(), user.getFileName());
+
+            if (!ObjectUtils.isEmpty(file)) {
+                fileEncoded = Base64.getEncoder().encodeToString(file);
+            }
+
+            fileDTO.setFileName(user.getFileName());
+            fileDTO.setActualFile(fileEncoded);
+        }
+
+        return fileDTO;
+    }
+
+    @Override
+    public List<FileDTO> fetchMinioFiles(String username, LocalDate from, LocalDate to) {
+        return minioUtil.getFilesByUsername(username, from, to);
+    }
+
+    @Override
+    public void updateEventPassword(Long id) {
+        HuaUser huaUser = userRepository.findById(id)
+                .orElseThrow(() -> new HuaNotFound("Δεν βρέθηκε ο φοιτητής με id: " + id));
+
+        try {
+            eventService.create(EventTypeEnum.PASSWORD, huaUser);
+        } catch (JsonProcessingException e) {
+            LOGGER.warn("Caught exception while creating event for password update", e);
+        }
+
+    }
+
+    @Override
+    public List<NotificationDTO> notifyAdmins() {
+        List<NotificationDTO> dto = new ArrayList<>();
+
+        List<HuaUser> admins = userRepository.findByRoles_Id(1L);
+
+        List<String> listOfAdminEmails = admins.stream()
+                .map(HuaUser::getEmail)
+                .collect(Collectors.toList());
+
+        LOGGER.info("Fetched admin emails: " + listOfAdminEmails.size());
+
+        List<EventDTO> events = eventService.get(false, EventTypeEnum.REGISTRATION);
+
+        List<String> usernamesToBeInformed = events
+                .stream()
+                .map(event -> event.getStudent().getUsername())
+                .collect(Collectors.toList());
+
+        LOGGER.info("Fetched usernames to be informed: " + usernamesToBeInformed.size());
+
+        NotificationDTO notificationDTO = new NotificationDTO();
+
+        notificationDTO.setAdmins(listOfAdminEmails);
+        notificationDTO.setUsernames(usernamesToBeInformed);
+
+        dto.add(notificationDTO);
+
+        events.forEach(event -> {
+            event.setAdminInformed(true);
+            eventService.update(event);
+        });
+
+        return dto;
     }
 
 
@@ -138,6 +270,7 @@ public class StudentServiceImpl implements StudentService {
         user.setVerified(false);
         user.setPassword(passwordEncoder.encode(TEMP));
         user.setEmail(TEMP);
+        user.setPersonalEmail(studentDTO.getPersonalEmail());
         user.setUsername(TEMP);
 
         user.setSurname(studentDTO.getSurname());
@@ -173,36 +306,33 @@ public class StudentServiceImpl implements StudentService {
         }
     }
 
-    private StudentDTO toStudentDTO(HuaUser user) {
-        StudentDTO dto = new StudentDTO();
-        dto.setId(user.getId());
-        dto.setDateChanged(user.getDateChanged());
-        dto.setDateCreated(user.getDateCreated());
-        dto.setAddress(user.getAddress());
-        dto.setCity(user.getCity());
-        dto.setDepartment(user.getDepartment());
-        dto.setEmail(user.getEmail());
-        dto.setUsername(user.getUsername());
-        dto.setIsVerified(user.getVerified() != null ? user.getVerified() : false);
+    private void saveFileOnDbAndMinio(HuaUser user, FileDTO fileDTO) throws IOException {
+        String fileName = fileDTO.getFileName();
 
-        StudentDirectionDTO direction = new StudentDirectionDTO();
-        direction.setName(user.getDirection());
-        dto.setDirection(direction);
+        if (!ObjectUtils.isEmpty(fileName)) {
+            user.setFileName(fileName);
+            user.setDateFileCreated(LocalDateTime.now());
 
-        if (user.getBirthDate() != null) {
-            String birthDateFormatted = HuaUtil.formatDateToString(user.getBirthDate());
-            dto.setBirthDate(birthDateFormatted);
+            String actualFile = fileDTO.getActualFile();
+            byte[] decodedFile = Base64.getDecoder().decode(actualFile);
+            InputStream targetStream = new ByteArrayInputStream(decodedFile);
+            long length = targetStream.available();
+
+            minioUtil.uploadFile(user.getUsername(), fileName, targetStream, length, fileDTO.getMimeType());
         }
 
-        dto.setGender(user.getGender());
-        dto.setFatherName(user.getFatherName());
-        dto.setMobileNumber(user.getMobileNumber());
-        dto.setMotherName(user.getMotherName());
-        dto.setName(user.getName());
-        dto.setSurname(user.getSurname());
-        dto.setPostalCode(user.getPostalCode());
-        dto.setVatNumber(user.getVatNumber());
+        userRepository.save(user);
+    }
 
-        return dto;
+    private RabbitMqDTO toRabbitMqDTO(HuaUser savedUser, EventDTO eventDTO) {
+        RabbitMqDTO rabbitMqDTO = new RabbitMqDTO();
+        rabbitMqDTO.setEventId(eventDTO.getId());
+        rabbitMqDTO.setEventType(eventDTO.getEventType());
+        rabbitMqDTO.setEmail(savedUser.getEmail());
+        rabbitMqDTO.setPersonalEmail(savedUser.getPersonalEmail());
+        rabbitMqDTO.setCreatedDate(eventDTO.getCreatedDate());
+        rabbitMqDTO.setUserId(savedUser.getId());
+
+        return rabbitMqDTO;
     }
 }

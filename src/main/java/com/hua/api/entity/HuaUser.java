@@ -10,10 +10,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 @Entity
 @Table(name = "HUA_USER")
@@ -34,6 +31,10 @@ public class HuaUser implements Serializable {
     @Column(nullable = false, unique = true)
     //generated from system with @hua.gr
     private String email;
+
+    //for testing reasons
+    @Column(name = "personal_email")
+    private String personalEmail;
 
     @Column(name = "surname")
     private String surname;
@@ -88,6 +89,13 @@ public class HuaUser implements Serializable {
     @Column(name = "is_verified")
     private Boolean verified;
 
+    @Column(name = "file_name")
+    private String fileName;
+
+    @CreatedDate
+    @Column(name = "date_file_created")
+    private LocalDateTime dateFileCreated;
+
     @ManyToMany(cascade = {
             CascadeType.PERSIST,
             CascadeType.MERGE
@@ -98,6 +106,8 @@ public class HuaUser implements Serializable {
     )
     private Set<HuaRole> roles = new HashSet<>();
 
+    @OneToMany(mappedBy = "huaUser", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<HuaEvent> huaEvents = new ArrayList<>();
 
     public void addRole(HuaRole role) {
         roles.add(role);
@@ -142,6 +152,14 @@ public class HuaUser implements Serializable {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getPersonalEmail() {
+        return personalEmail;
+    }
+
+    public void setPersonalEmail(String personalEmail) {
+        this.personalEmail = personalEmail;
     }
 
     public String getSurname() {
@@ -272,12 +290,36 @@ public class HuaUser implements Serializable {
         this.verified = verified;
     }
 
+    public String getFileName() {
+        return fileName;
+    }
+
+    public void setFileName(String fileName) {
+        this.fileName = fileName;
+    }
+
+    public LocalDateTime getDateFileCreated() {
+        return dateFileCreated;
+    }
+
+    public void setDateFileCreated(LocalDateTime dateFileCreated) {
+        this.dateFileCreated = dateFileCreated;
+    }
+
     public Set<HuaRole> getRoles() {
         return roles;
     }
 
     public void setRoles(Set<HuaRole> roles) {
         this.roles = roles;
+    }
+
+    public List<HuaEvent> getHuaEvents() {
+        return huaEvents;
+    }
+
+    public void setHuaEvents(List<HuaEvent> huaEvents) {
+        this.huaEvents = huaEvents;
     }
 
     @Override
