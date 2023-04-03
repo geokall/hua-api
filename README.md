@@ -1,4 +1,4 @@
-# Final project of Web information systems and IoT
+# Final project of Web information systems and IoT - API
 
 ## Overview
 
